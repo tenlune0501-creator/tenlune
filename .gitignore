@@ -1,0 +1,37 @@
+# ── 백업 (원본은 OneDrive에 보관, 로컬은 복사본) ───────────────
+backups/
+*.tar.gz
+*.sql
+
+# ── 비밀키 / 환경변수 / 자격증명 ──────────────────────────────
+.env
+.env.*
+*.key
+*.pem
+*.p12
+secrets.*
+*secret*
+*credential*
+*webhook*
+wp-config.php
+
+# ── OS / 에디터 임시 파일 ────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+.idea/
+.vscode/
+*.code-workspace
+
+# ── 빌드 / 의존성 / 로그 ─────────────────────────────────────
+node_modules/
+*.log
+
+# 추적 대상(참고): wp-content/themes/tenlune, wp-content/plugins/tenlune-content,
+# snippets/, design/, dist/*.zip 는 위 규칙에 걸리지 않으므로 정상 추적됩니다.

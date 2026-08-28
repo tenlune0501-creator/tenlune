@@ -1,0 +1,315 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": true,
+		"layout": {
+			"contentSize": "1180px",
+			"wideSize": "1180px"
+		},
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"custom": false,
+			"customDuotone": false,
+			"customGradient": false,
+			"background": true,
+			"text": true,
+			"link": true,
+			"palette": [
+				{ "slug": "base",        "color": "#0C0E11", "name": "Base — 페이지 바탕" },
+				{ "slug": "surface",     "color": "#131519", "name": "Surface — 문의 섹션" },
+				{ "slug": "surface-alt", "color": "#191C22", "name": "Surface Alt — 미세 상태" },
+				{ "slug": "work-frame",  "color": "#101318", "name": "Work Frame — 작업물 바닥" },
+				{ "slug": "line",        "color": "#1E222A", "name": "Line — 기본 구분선" },
+				{ "slug": "line-strong", "color": "#2C313A", "name": "Line Strong — 섹션 상단선" },
+				{ "slug": "text-faint",  "color": "#5C6067", "name": "Text Faint — 라벨·번호" },
+				{ "slug": "text-muted",  "color": "#82868D", "name": "Text Muted — 보조 설명" },
+				{ "slug": "text-second", "color": "#B4B7BC", "name": "Text Second — 리드·메타" },
+				{ "slug": "contrast",    "color": "#EAE8E3", "name": "Contrast — 본문·제목" },
+				{ "slug": "contrast-hi", "color": "#FFFFFF", "name": "Contrast Hi — hover 전용" }
+			]
+		},
+		"typography": {
+			"defaultFontSizes": false,
+			"customFontSize": false,
+			"fluid": true,
+			"writingMode": false,
+			"fontFamilies": [
+				{
+					"slug": "display",
+					"name": "Display — Gothic A1",
+					"fontFamily": "\"Gothic A1\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", system-ui, sans-serif"
+				},
+				{
+					"slug": "body",
+					"name": "Body — IBM Plex Sans KR",
+					"fontFamily": "\"IBM Plex Sans KR\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", system-ui, sans-serif"
+				},
+				{
+					"slug": "mono",
+					"name": "Mono — IBM Plex Mono (라틴·숫자 전용)",
+					"fontFamily": "\"IBM Plex Mono\", \"SFMono-Regular\", Consolas, monospace"
+				}
+			],
+			"fontSizes": [
+				{
+					"slug": "label",
+					"name": "Label 0.64rem",
+					"size": "0.64rem",
+					"fluid": false
+				},
+				{
+					"slug": "meta",
+					"name": "Meta 0.84rem",
+					"size": "0.84rem",
+					"fluid": false
+				},
+				{
+					"slug": "small",
+					"name": "Small 0.88rem",
+					"size": "0.88rem",
+					"fluid": false
+				},
+				{
+					"slug": "body",
+					"name": "Body 0.95rem",
+					"size": "0.95rem",
+					"fluid": false
+				},
+				{
+					"slug": "lead",
+					"name": "Lead 1 → 1.16rem",
+					"size": "1.16rem",
+					"fluid": { "min": "1rem", "max": "1.16rem" }
+				},
+				{
+					"slug": "h3",
+					"name": "H3 1.25 → 1.6rem",
+					"size": "1.6rem",
+					"fluid": { "min": "1.25rem", "max": "1.6rem" }
+				},
+				{
+					"slug": "h2",
+					"name": "H2 1.5 → 2.1rem",
+					"size": "2.1rem",
+					"fluid": { "min": "1.5rem", "max": "2.1rem" }
+				},
+				{
+					"slug": "h2-lg",
+					"name": "H2 Large 1.7 → 2.5rem",
+					"size": "2.5rem",
+					"fluid": { "min": "1.7rem", "max": "2.5rem" }
+				},
+				{
+					"slug": "h1",
+					"name": "H1 2.4 → 5rem",
+					"size": "5rem",
+					"fluid": { "min": "2.4rem", "max": "5rem" }
+				}
+			]
+		},
+		"spacing": {
+			"defaultSpacingSizes": false,
+			"customSpacingSize": false,
+			"units": [ "px", "rem", "%", "vw", "vh" ],
+			"spacingSizes": [
+				{ "slug": "10", "name": "10 — 인라인",            "size": "0.5rem" },
+				{ "slug": "20", "name": "20 — 요소 사이",          "size": "1rem" },
+				{ "slug": "30", "name": "30 — 블록 기본",          "size": "1.6rem" },
+				{ "slug": "40", "name": "40 — 섹션 헤드 아래",     "size": "2.6rem" },
+				{ "slug": "50", "name": "50 — 섹션 상하 (모바일)", "size": "4rem" },
+				{ "slug": "60", "name": "60 — 섹션 상하 (데스크톱)", "size": "5.5rem" },
+				{ "slug": "70", "name": "70 — 문의 섹션 상하",     "size": "7rem" },
+				{ "slug": "80", "name": "80 — 작업물 사이",        "size": "10rem" }
+			]
+		},
+		"border": { "color": true, "radius": false, "style": true, "width": true },
+		"shadow": { "defaultPresets": false, "presets": [] },
+		"background": { "backgroundImage": false, "backgroundSize": false },
+		"dimensions": { "aspectRatio": true, "minHeight": true }
+	},
+	"styles": {
+		"color": {
+			"background": "var(--wp--preset--color--base)",
+			"text": "var(--wp--preset--color--contrast)"
+		},
+		"typography": {
+			"fontFamily": "var(--wp--preset--font-family--body)",
+			"fontSize": "1rem",
+			"fontWeight": "300",
+			"lineHeight": "1.8"
+		},
+		"spacing": {
+			"blockGap": "var(--wp--preset--spacing--30)",
+			"padding": {
+				"left": "1.5rem",
+				"right": "1.5rem"
+			}
+		},
+		"elements": {
+			"link": {
+				"color": { "text": "var(--wp--preset--color--contrast)" },
+				"typography": { "textDecoration": "underline" },
+				":hover": {
+					"color": { "text": "var(--wp--preset--color--contrast-hi)" }
+				}
+			},
+			"heading": {
+				"color": { "text": "var(--wp--preset--color--contrast)" },
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--display)",
+					"fontWeight": "700",
+					"lineHeight": "1.42",
+					"letterSpacing": "-0.028em"
+				}
+			},
+			"h1": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--h1)",
+					"fontWeight": "800",
+					"lineHeight": "1.22",
+					"letterSpacing": "-0.038em"
+				}
+			},
+			"h2": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--h2)"
+				}
+			},
+			"h3": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--h3)"
+				}
+			},
+			"h4": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--lead)",
+					"fontWeight": "600",
+					"letterSpacing": "-0.022em"
+				}
+			},
+			"h5": {
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--body)",
+					"fontWeight": "600",
+					"letterSpacing": "-0.018em"
+				}
+			},
+			"h6": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--mono)",
+					"fontSize": "var(--wp--preset--font-size--label)",
+					"fontWeight": "500",
+					"letterSpacing": "0.16em",
+					"textTransform": "uppercase"
+				},
+				"color": { "text": "var(--wp--preset--color--text-faint)" }
+			},
+			"button": {
+				"color": {
+					"background": "var(--wp--preset--color--contrast)",
+					"text": "var(--wp--preset--color--base)"
+				},
+				"border": {
+					"width": "1px",
+					"style": "solid",
+					"color": "var(--wp--preset--color--contrast)",
+					"radius": "0"
+				},
+				"typography": {
+					"fontSize": "var(--wp--preset--font-size--body)",
+					"fontWeight": "500"
+				},
+				"spacing": {
+					"padding": {
+						"top": "0.92rem",
+						"bottom": "0.92rem",
+						"left": "1.8rem",
+						"right": "1.8rem"
+					}
+				},
+				":hover": {
+					"color": {
+						"background": "var(--wp--preset--color--contrast-hi)",
+						"text": "var(--wp--preset--color--base)"
+					},
+					"border": { "color": "var(--wp--preset--color--contrast-hi)" }
+				}
+			},
+			"caption": {
+				"color": { "text": "var(--wp--preset--color--text-muted)" },
+				"typography": { "fontSize": "var(--wp--preset--font-size--meta)" }
+			}
+		},
+		"blocks": {
+			"core/paragraph": {
+				"typography": { "fontSize": "var(--wp--preset--font-size--body)" }
+			},
+			"core/separator": {
+				"color": { "text": "var(--wp--preset--color--line)" }
+			},
+			"core/quote": {
+				"border": {
+					"left": {
+						"width": "1px",
+						"style": "solid",
+						"color": "var(--wp--preset--color--line-strong)"
+					}
+				},
+				"spacing": { "padding": { "left": "var(--wp--preset--spacing--30)" } },
+				"color": { "text": "var(--wp--preset--color--text-second)" }
+			},
+			"core/code": {
+				"color": {
+					"background": "var(--wp--preset--color--surface)",
+					"text": "var(--wp--preset--color--text-second)"
+				},
+				"border": {
+					"width": "1px",
+					"style": "solid",
+					"color": "var(--wp--preset--color--line)"
+				},
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--mono)",
+					"fontSize": "var(--wp--preset--font-size--meta)"
+				},
+				"spacing": { "padding": { "top": "1rem", "bottom": "1rem", "left": "1.1rem", "right": "1.1rem" } }
+			},
+			"core/preformatted": {
+				"typography": { "fontFamily": "var(--wp--preset--font-family--mono)" }
+			},
+			"core/table": {
+				"typography": { "fontSize": "var(--wp--preset--font-size--meta)" },
+				"color": { "text": "var(--wp--preset--color--text-second)" }
+			},
+			"core/list": {
+				"typography": { "fontSize": "var(--wp--preset--font-size--body)" }
+			},
+			"core/post-title": {
+				"typography": { "fontFamily": "var(--wp--preset--font-family--display)" }
+			},
+			"core/site-title": {
+				"typography": {
+					"fontFamily": "var(--wp--preset--font-family--display)",
+					"fontSize": "1.15rem",
+					"fontWeight": "800",
+					"letterSpacing": "0.01em"
+				}
+			}
+		}
+	},
+	"templateParts": [
+		{ "name": "header", "title": "헤더", "area": "header" },
+		{ "name": "footer", "title": "푸터", "area": "footer" }
+	],
+	"customTemplates": [
+		{
+			"name": "page-plain",
+			"title": "페이지 — 제목 없이 패턴만",
+			"postTypes": [ "page" ]
+		}
+	]
+}

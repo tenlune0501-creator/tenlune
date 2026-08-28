@@ -1,0 +1,1243 @@
+/* ============================================================
+   Tenlune — 레이아웃 CSS
+   theme.json 으로 표현되지 않는 부분만 담습니다.
+
+   토큰은 전부 theme.json 의 preset 변수를 다시 가리킵니다.
+   색을 바꿀 일이 생기면 theme.json 만 고치면 됩니다. 이 파일에는
+   색 리터럴을 새로 쓰지 않습니다. (작업물 임시 색면 두 개만 예외이며,
+   실제 이미지가 들어가는 순간 삭제합니다.)
+
+   기준: tenlune-home-final.html (Dark 최종안 · 2026-08-24)
+   ============================================================ */
+
+:root {
+	--tl-bg:        var(--wp--preset--color--base);
+	--tl-surface:   var(--wp--preset--color--surface);
+	--tl-surface-2: var(--wp--preset--color--surface-alt);
+	--tl-shot-bg:   var(--wp--preset--color--work-frame);
+	--tl-line:      var(--wp--preset--color--line);
+	--tl-line-2:    var(--wp--preset--color--line-strong);
+	--tl-faint:     var(--wp--preset--color--text-faint);
+	--tl-muted:     var(--wp--preset--color--text-muted);
+	--tl-text-2:    var(--wp--preset--color--text-second);
+	--tl-text:      var(--wp--preset--color--contrast);
+	--tl-text-hi:   var(--wp--preset--color--contrast-hi);
+
+	--tl-f-disp: var(--wp--preset--font-family--display);
+	--tl-f-body: var(--wp--preset--font-family--body);
+	--tl-f-mono: var(--wp--preset--font-family--mono);
+
+	--tl-s-1: var(--wp--preset--spacing--10);
+	--tl-s-2: var(--wp--preset--spacing--20);
+	--tl-s-3: var(--wp--preset--spacing--30);
+	--tl-s-4: var(--wp--preset--spacing--40);
+	--tl-s-5: var(--wp--preset--spacing--50);
+	--tl-s-6: var(--wp--preset--spacing--60);
+	--tl-s-7: var(--wp--preset--spacing--70);
+	--tl-s-8: var(--wp--preset--spacing--80);
+
+	--tl-max: 1180px;
+	--tl-pad: 1.5rem;
+}
+
+@media (min-width: 900px) {
+	:root { --tl-pad: 2.75rem; }
+	body { --wp--style--root--padding-left: 2.75rem; --wp--style--root--padding-right: 2.75rem; }
+}
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+	html { scroll-behavior: auto; }
+	*, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+body {
+	word-break: keep-all;
+	overflow-wrap: break-word;
+	-webkit-font-smoothing: antialiased;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+	outline: 2px solid var(--tl-text);
+	outline-offset: 3px;
+}
+
+/* 본문 폭 안에서만 스크롤되어야 하는 것들 — 페이지 몸통이 가로로 밀리는 일은 없어야 합니다. */
+.wp-block-table,
+.wp-block-code,
+.wp-block-preformatted,
+.tl-scroll-x {
+	overflow-x: auto;
+	max-width: 100%;
+}
+
+.tl-skip {
+	position: absolute;
+	left: -9999px;
+	background: var(--tl-text);
+	color: var(--tl-bg);
+	padding: 0.7rem 1.2rem;
+	font-size: 0.9rem;
+	z-index: 200;
+	text-decoration: none;
+}
+.tl-skip:focus { left: 1rem; top: 1rem; }
+
+/* ─────────── header ─────────── */
+
+.tl-nav {
+	display: flex;
+	align-items: center;
+	gap: var(--tl-s-2);
+	padding: var(--tl-s-3) 0;
+}
+
+.tl-brand {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.15;
+	text-decoration: none;
+	color: inherit;
+}
+.tl-brand .n {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: 1.15rem;
+	letter-spacing: 0.01em;
+}
+.tl-brand .d {
+	font-family: var(--tl-f-mono);
+	font-size: 0.58rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+	margin-top: 0.25rem;
+}
+
+/* 데스크톱 메뉴. 접히는 처리는 코어 Navigation 블록의 오버레이가 맡습니다. */
+.tl-menu { gap: 1.9rem; margin-left: auto; align-items: center; }
+.tl-menu a {
+	color: var(--tl-text-2);
+	text-decoration: none;
+	font-size: 0.88rem;
+	transition: color 0.18s;
+}
+.tl-menu a:hover,
+.tl-menu a[aria-current] { color: var(--tl-text); }
+
+/* 모바일 헤더: 로고 + 「작업 의뢰」는 접지 않고 항상 노출, 메뉴만 접습니다.
+   버튼을 메뉴 안으로 숨기면 전환이 크게 떨어집니다. — 설계안 12번 */
+.tl-nav .wp-block-navigation__responsive-container-open,
+.tl-nav .wp-block-navigation__responsive-container-close { color: var(--tl-text-2); }
+.tl-nav .wp-block-navigation__responsive-container.is-menu-open {
+	background: var(--tl-bg);
+	padding: var(--tl-s-3) var(--tl-pad);
+}
+.tl-nav .wp-block-navigation__responsive-container.is-menu-open a { font-size: 1.05rem; color: var(--tl-text); }
+
+.tl-nav-cta {
+	margin-left: auto;
+	font-size: 0.84rem;
+	font-weight: 400;
+	padding: 0.5rem 1.15rem;
+	background: var(--tl-text);
+	color: var(--tl-bg);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: background 0.18s;
+}
+@media (min-width: 860px) { .tl-nav-cta { margin-left: 2rem; } }
+.tl-nav-cta:hover { background: var(--tl-text-hi); color: var(--tl-bg); }
+
+/* ─────────── hero ─────────── */
+
+.tl-hero { position: relative; overflow: hidden; }
+.tl-hero::before {
+	content: "";
+	position: absolute;
+	inset: -22% -12% auto -12%;
+	height: 44rem;
+	background: radial-gradient(ellipse 52% 46% at 50% 0%,
+		rgba(234, 232, 227, 0.055), rgba(234, 232, 227, 0.018) 44%, transparent 72%);
+	pointer-events: none;
+}
+.tl-hero-in { position: relative; padding: var(--tl-s-6) 0 var(--tl-s-7); }
+@media (min-width: 900px) { .tl-hero-in { padding: 11rem 0 12rem; } }
+
+.tl-eyebrow {
+	font-family: var(--tl-f-mono);
+	font-size: 0.66rem;
+	letter-spacing: 0.17em;
+	text-transform: uppercase;
+	color: var(--tl-muted);
+	margin: 0 0 var(--tl-s-4);
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+.tl-eyebrow::before {
+	content: "";
+	width: 1.9rem;
+	height: 1px;
+	background: var(--tl-line-2);
+}
+
+.tl-h1 {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: clamp(2.4rem, 7.2vw, 5rem);
+	line-height: 1.22;
+	letter-spacing: -0.038em;
+	margin: 0 0 var(--tl-s-3);
+	max-width: 15em;
+	text-wrap: balance;
+}
+
+.tl-lead {
+	font-size: clamp(1rem, 1.6vw, 1.16rem);
+	line-height: 1.85;
+	color: var(--tl-text-2);
+	max-width: 30em;
+	margin: 0 0 0.9rem;
+}
+.tl-lead-2 {
+	font-size: 0.93rem;
+	line-height: 1.85;
+	color: var(--tl-muted);
+	max-width: 32em;
+	margin: 0 0 var(--tl-s-4);
+}
+
+.tl-actions { display: flex; flex-wrap: wrap; gap: 0.9rem; }
+
+.tl-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.92rem 1.8rem;
+	font-size: 0.96rem;
+	font-weight: 400;
+	text-decoration: none;
+	border: 1px solid;
+	transition: background 0.18s, color 0.18s, gap 0.18s, border-color 0.18s;
+}
+.tl-btn--solid {
+	background: var(--tl-text);
+	border-color: var(--tl-text);
+	color: var(--tl-bg);
+	font-weight: 500;
+}
+.tl-btn--solid:hover {
+	background: var(--tl-text-hi);
+	border-color: var(--tl-text-hi);
+	color: var(--tl-bg);
+	gap: 0.95rem;
+}
+.tl-btn--ghost {
+	background: transparent;
+	border-color: var(--tl-line-2);
+	color: var(--tl-text-2);
+}
+.tl-btn--ghost:hover { border-color: var(--tl-muted); color: var(--tl-text); }
+
+/* 모바일 Hero 는 CTA 1개. 두 개가 나란히 있으면 서로 경쟁해서 둘 다 안 눌립니다. */
+@media (max-width: 619px) {
+	.tl-hero .tl-actions .tl-btn--ghost { display: none; }
+}
+
+/* 하위 페이지용 축약 헤드 — Hero 를 그대로 쓰지 않습니다. */
+.tl-pagehead { padding: var(--tl-s-5) 0 var(--tl-s-4); border-bottom: 1px solid var(--tl-line); }
+@media (min-width: 900px) { .tl-pagehead { padding: 7rem 0 var(--tl-s-5); } }
+.tl-pagehead .tl-h2-lg {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 3.7vw, 2.5rem);
+	line-height: 1.35;
+	letter-spacing: -0.035em;
+	margin: 0;
+	text-wrap: balance;
+}
+.tl-pagehead .tl-lead { margin-top: var(--tl-s-3); }
+
+/* ─────────── section frame ─────────── */
+
+.tl-sec { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-sec { padding: var(--tl-s-6) 0; } }
+
+.tl-sec-head { margin: 0 0 var(--tl-s-4); max-width: 40em; }
+.tl-sec-label {
+	font-family: var(--tl-f-mono);
+	font-size: 0.64rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+	display: block;
+	margin-bottom: var(--tl-s-2);
+}
+.tl-sec-title {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: clamp(1.5rem, 3.1vw, 2.1rem);
+	line-height: 1.42;
+	letter-spacing: -0.028em;
+	margin: 0;
+	text-wrap: balance;
+}
+.tl-sec-desc {
+	font-size: 0.95rem;
+	color: var(--tl-muted);
+	line-height: 1.9;
+	margin: 0.9rem 0 0;
+	max-width: 34em;
+}
+
+/* ─────────── 01 무엇을 만드나 : 4열 ─────────── */
+
+.tl-makes { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 640px)  { .tl-makes { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
+@media (min-width: 1000px) { .tl-makes { grid-template-columns: repeat(4, 1fr); column-gap: 2rem; } }
+
+.tl-make { border-top: 1px solid var(--tl-line-2); padding: var(--tl-s-3) 0 1.9rem; }
+.tl-make .k {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.1em;
+	color: var(--tl-faint);
+	display: block;
+	margin-bottom: 0.8rem;
+}
+.tl-make .t {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: 1.04rem;
+	letter-spacing: -0.02em;
+	line-height: 1.5;
+	display: block;
+	margin-bottom: 0.5rem;
+}
+.tl-make .d { font-size: 0.87rem; color: var(--tl-muted); line-height: 1.85; display: block; }
+
+/* ─────────── 02 문제를 정리하는 방식 : 6열, 최고 밀도 ─────────── */
+
+.tl-steps { display: grid; grid-template-columns: 1fr; list-style: none; margin: 0; padding: 0; }
+@media (min-width: 620px)  { .tl-steps { grid-template-columns: 1fr 1fr; column-gap: 2rem; } }
+@media (min-width: 1040px) { .tl-steps { grid-template-columns: repeat(6, 1fr); column-gap: 1.4rem; } }
+
+.tl-step { border-top: 1px solid var(--tl-line); padding: 1.3rem 0 var(--tl-s-3); }
+.tl-step .k {
+	font-family: var(--tl-f-mono);
+	font-size: 0.63rem;
+	color: var(--tl-muted);
+	letter-spacing: 0.08em;
+	display: block;
+	margin-bottom: 0.7rem;
+}
+.tl-step .t {
+	font-family: var(--tl-f-disp);
+	font-weight: 600;
+	font-size: 0.95rem;
+	display: block;
+	margin-bottom: 0.4rem;
+	line-height: 1.5;
+}
+.tl-step .d { font-size: 0.83rem; color: var(--tl-muted); line-height: 1.8; display: block; }
+
+/* ═══════════ 03 제작 사례 : 전시 ═══════════ */
+
+.tl-gallery { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-gallery { padding: 8rem 0 6rem; } }
+.tl-gallery .tl-sec-head { margin-bottom: var(--tl-s-5); }
+@media (min-width: 900px) { .tl-gallery .tl-sec-head { margin-bottom: var(--tl-s-6); } }
+
+.tl-works { display: flex; flex-direction: column; gap: 6.5rem; }
+@media (min-width: 900px) { .tl-works { gap: var(--tl-s-8); } }
+
+/* 쿼리 루프가 만드는 목록에도 같은 리듬을 씌웁니다. */
+.tl-works.wp-block-post-template { list-style: none; margin: 0; padding: 0; }
+.tl-works.wp-block-post-template > li { margin: 0; }
+
+.tl-work-fig { margin: 0 0 var(--tl-s-3); }
+@media (min-width: 900px) { .tl-work-fig { margin-bottom: var(--tl-s-4); } }
+
+/* 작업물 프레임 — 테두리·그림자 없음. 카드가 가려 주던 것이 없으므로 캡처 품질이 그대로 드러납니다. */
+.tl-shot,
+.tl-work-fig .wp-block-post-featured-image {
+	position: relative;
+	aspect-ratio: 16 / 10;
+	background: var(--tl-shot-bg);
+	overflow: hidden;
+	margin: 0;
+}
+@media (max-width: 620px) {
+	.tl-shot,
+	.tl-work-fig .wp-block-post-featured-image { aspect-ratio: 4 / 3; }
+}
+
+.tl-shot img,
+.tl-work-fig .wp-block-post-featured-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center top;
+	border-radius: 0;
+}
+
+.tl-shot-ph { position: absolute; inset: 0; }
+.tl-shot-note {
+	position: absolute;
+	left: 0.9rem;
+	bottom: 0.9rem;
+	font-family: var(--tl-f-mono);
+	font-size: 0.6rem;
+	letter-spacing: 0.1em;
+	color: rgba(255, 255, 255, 0.82);
+	background: rgba(0, 0, 0, 0.55);
+	padding: 0.3rem 0.6rem;
+}
+
+/* 작업물이 준비되기 전 임시 색면. 실제 이미지 투입 시 이 두 규칙은 삭제합니다. */
+.tl-ph--1 { background: linear-gradient(128deg, #17414E 0%, #2C7370 32%, #63A188 60%, #C8A96E 88%, #E3C9A0 100%); }
+.tl-ph--2 { background: linear-gradient(142deg, #2A2140 0%, #533A63 30%, #9C5A6B 58%, #D08A6A 82%, #E8C39A 100%); }
+
+.tl-work-cap { display: grid; grid-template-columns: 1fr; gap: var(--tl-s-3); }
+@media (min-width: 880px) {
+	.tl-work-cap { grid-template-columns: minmax(0, 1fr) 15rem; gap: 3.5rem; align-items: start; }
+}
+
+.tl-work-t {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+	letter-spacing: -0.028em;
+	line-height: 1.45;
+	margin: 0 0 0.75rem;
+}
+.tl-work-t a { text-decoration: none; color: inherit; }
+.tl-work-t a:hover { color: var(--tl-text-hi); }
+
+.tl-work-p {
+	font-size: 0.93rem;
+	line-height: 1.9;
+	color: var(--tl-muted);
+	margin: 0 0 1.3rem;
+	max-width: 32em;
+}
+
+.tl-work-link {
+	font-size: 0.88rem;
+	color: var(--tl-text-2);
+	text-decoration: none;
+	display: inline-flex;
+	gap: 0.5rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px solid var(--tl-line-2);
+	transition: gap 0.18s, color 0.18s, border-color 0.18s;
+}
+.tl-work-link:hover { gap: 0.85rem; color: var(--tl-text); border-bottom-color: var(--tl-muted); }
+
+.tl-work-meta { display: flex; flex-direction: column; gap: 0.95rem; padding-top: 0.35rem; margin: 0; }
+.tl-work-meta > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.tl-work-meta dt {
+	font-family: var(--tl-f-mono);
+	font-size: 0.58rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+}
+.tl-work-meta dd { font-size: 0.84rem; color: var(--tl-text-2); line-height: 1.6; margin: 0; }
+
+.tl-works-note {
+	margin-top: var(--tl-s-6);
+	padding-top: var(--tl-s-3);
+	border-top: 1px solid var(--tl-line);
+}
+@media (min-width: 900px) { .tl-works-note { margin-top: var(--tl-s-7); } }
+.tl-works-note p { font-size: 0.88rem; color: var(--tl-muted); margin: 0; }
+
+/* ─────────── 04 일하는 방식 : 3열 ─────────── */
+
+.tl-prin { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .tl-prin { grid-template-columns: repeat(3, 1fr); column-gap: 3rem; } }
+.tl-p { border-top: 1px solid var(--tl-line-2); padding: var(--tl-s-3) 0; }
+.tl-p .q {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: 1.04rem;
+	line-height: 1.6;
+	letter-spacing: -0.022em;
+	display: block;
+	margin-bottom: 0.7rem;
+}
+.tl-p .d { font-size: 0.87rem; color: var(--tl-muted); line-height: 1.85; display: block; }
+
+/* ─────────── 05 기록 : 행 ─────────── */
+
+.tl-journal { border-top: 1px solid var(--tl-line); list-style: none; margin: 0; padding: 0; }
+.tl-journal > li { margin: 0; }
+
+.tl-j {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.35rem;
+	padding: var(--tl-s-3) 0;
+	border-bottom: 1px solid var(--tl-line);
+	text-decoration: none;
+	color: inherit;
+	transition: padding-left 0.22s;
+}
+@media (min-width: 780px) {
+	.tl-j { grid-template-columns: 8rem minmax(0, 1fr) 10rem; gap: 2rem; align-items: baseline; }
+	.tl-j:hover { padding-left: 0.7rem; }
+}
+.tl-j .date,
+.tl-j .wp-block-post-date {
+	font-family: var(--tl-f-mono);
+	font-size: 0.64rem;
+	color: var(--tl-faint);
+	letter-spacing: 0.08em;
+}
+.tl-j .title,
+.tl-j .wp-block-post-title {
+	font-family: var(--tl-f-disp);
+	font-weight: 500;
+	font-size: 1rem;
+	line-height: 1.6;
+	letter-spacing: -0.018em;
+	color: var(--tl-text);
+	margin: 0;
+	transition: color 0.18s;
+}
+.tl-j:hover .title,
+.tl-j:hover .wp-block-post-title a { color: var(--tl-text-hi); }
+.tl-j .wp-block-post-title a { text-decoration: none; color: inherit; }
+.tl-j .cat,
+.tl-j .wp-block-post-terms {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--tl-muted);
+}
+.tl-j .wp-block-post-terms a { text-decoration: none; color: inherit; }
+@media (min-width: 780px) {
+	.tl-j .cat,
+	.tl-j .wp-block-post-terms { text-align: right; }
+}
+
+/* ─────────── 06 문의 : 유일한 면 전환 ─────────── */
+
+.tl-contact { background: var(--tl-surface); border-top: 1px solid var(--tl-line); }
+.tl-contact-in { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-contact-in { padding: var(--tl-s-7) 0; } }
+
+.tl-contact-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; }
+@media (min-width: 940px) { .tl-contact-grid { grid-template-columns: 1.15fr 1fr; gap: 5rem; } }
+
+.tl-contact-h {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 3.7vw, 2.5rem);
+	line-height: 1.35;
+	letter-spacing: -0.035em;
+	margin: 0 0 1.2rem;
+	text-wrap: balance;
+}
+.tl-contact-p {
+	font-size: 0.96rem;
+	color: var(--tl-text-2);
+	line-height: 1.9;
+	margin: 0 0 var(--tl-s-3);
+	max-width: 26em;
+}
+
+.tl-flow {
+	list-style: none;
+	margin: var(--tl-s-3) 0 0;
+	padding: var(--tl-s-3) 0 0;
+	border-top: 1px solid var(--tl-line-2);
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+.tl-flow li {
+	display: grid;
+	grid-template-columns: 1.6rem 1fr;
+	gap: 0.7rem;
+	font-size: 0.87rem;
+	color: var(--tl-text-2);
+	line-height: 1.75;
+	margin: 0;
+}
+.tl-flow .k { font-family: var(--tl-f-mono); font-size: 0.64rem; color: var(--tl-muted); padding-top: 0.28em; }
+
+.tl-terms { border-top: 1px solid var(--tl-line-2); padding-top: var(--tl-s-3); }
+.tl-terms dl { display: grid; grid-template-columns: 1fr; gap: 1.3rem; margin: 0; }
+.tl-terms dt {
+	font-family: var(--tl-f-mono);
+	font-size: 0.61rem;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+	margin-bottom: 0.35rem;
+}
+.tl-terms dd { margin: 0; }
+.tl-terms .big {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: 1.3rem;
+	letter-spacing: -0.028em;
+	line-height: 1.45;
+	display: block;
+}
+.tl-terms .sm { font-size: 0.83rem; color: var(--tl-muted); line-height: 1.8; margin-top: 0.35rem; display: block; }
+
+/* ─────────── footer ─────────── */
+
+.tl-foot { padding: 3rem 0 var(--tl-s-5); border-top: 1px solid var(--tl-line); }
+.tl-foot-in { display: flex; flex-wrap: wrap; gap: var(--tl-s-3) 3rem; align-items: baseline; }
+.tl-foot .b { font-family: var(--tl-f-disp); font-weight: 800; font-size: 1rem; }
+.tl-foot .links { display: flex; flex-wrap: wrap; gap: 1.3rem; }
+.tl-foot .links a { font-size: 0.84rem; color: var(--tl-muted); text-decoration: none; transition: color 0.18s; }
+.tl-foot .links a:hover { color: var(--tl-text); }
+.tl-foot .dom {
+	font-family: var(--tl-f-mono);
+	font-size: 0.61rem;
+	letter-spacing: 0.08em;
+	color: var(--tl-faint);
+	margin-left: auto;
+}
+
+/* ============================================================
+   하위 화면 — Home 과 같은 토큰·같은 리듬만 사용합니다.
+   새로운 시각 언어를 만들지 않는 것이 이 파일의 규칙입니다.
+   ============================================================ */
+
+/* ─────────── Work 아카이브 ─────────── */
+
+.tl-work-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--tl-s-5) 2.5rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+@media (min-width: 760px) { .tl-work-grid { grid-template-columns: 1fr 1fr; gap: var(--tl-s-6) 2.5rem; } }
+.tl-work-grid > li { margin: 0; }
+
+.tl-card-t {
+	font-family: var(--tl-f-disp);
+	font-weight: 700;
+	font-size: 1.25rem;
+	letter-spacing: -0.028em;
+	line-height: 1.45;
+	margin: var(--tl-s-3) 0 0.5rem;
+}
+.tl-card-t a { text-decoration: none; color: inherit; }
+.tl-card-t a:hover { color: var(--tl-text-hi); }
+
+.tl-card-p { font-size: 0.88rem; color: var(--tl-muted); line-height: 1.85; margin: 0 0 0.9rem; }
+
+.tl-tagrow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.1rem;
+	font-family: var(--tl-f-mono);
+	font-size: 0.6rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+}
+.tl-tagrow a { color: inherit; text-decoration: none; }
+.tl-tagrow a:hover { color: var(--tl-text-2); }
+
+/* ─────────── 케이스 스터디 ─────────── */
+
+.tl-case-head { padding: var(--tl-s-5) 0 var(--tl-s-4); border-bottom: 1px solid var(--tl-line-2); }
+@media (min-width: 900px) { .tl-case-head { padding: 6.5rem 0 var(--tl-s-5); } }
+
+.tl-case-t {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: clamp(1.9rem, 4.6vw, 3rem);
+	line-height: 1.24;
+	letter-spacing: -0.036em;
+	margin: 0 0 var(--tl-s-3);
+	max-width: 16em;
+	text-wrap: balance;
+}
+
+.tl-case-meta {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	gap: 1.2rem 2rem;
+	margin: var(--tl-s-4) 0 0;
+	padding-top: var(--tl-s-3);
+	border-top: 1px solid var(--tl-line);
+}
+.tl-case-meta > div { display: flex; flex-direction: column; gap: 0.2rem; }
+.tl-case-meta dt {
+	font-family: var(--tl-f-mono);
+	font-size: 0.58rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+}
+.tl-case-meta dd { margin: 0; font-size: 0.86rem; color: var(--tl-text-2); line-height: 1.6; }
+
+/* 케이스 스터디는 10개 섹션이라 모바일에서 매우 깁니다. 목차를 붙입니다. */
+.tl-toc { border-top: 1px solid var(--tl-line); border-bottom: 1px solid var(--tl-line); padding: var(--tl-s-3) 0; margin: var(--tl-s-4) 0 0; }
+.tl-toc h2 {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+	margin: 0 0 0.9rem;
+	font-weight: 500;
+}
+.tl-toc ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
+@media (min-width: 700px) { .tl-toc ol { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
+.tl-toc li { margin: 0; }
+.tl-toc a {
+	display: grid;
+	grid-template-columns: 1.9rem 1fr;
+	gap: 0.3rem;
+	padding: 0.3rem 0;
+	color: var(--tl-muted);
+	text-decoration: none;
+	font-size: 0.85rem;
+	line-height: 1.5;
+}
+.tl-toc a:hover { color: var(--tl-text); }
+.tl-toc a .n { font-family: var(--tl-f-mono); font-size: 0.68rem; color: var(--tl-faint); }
+
+.tl-case-body { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-case-body { padding: var(--tl-s-6) 0; } }
+.tl-case-body > * { max-width: 44rem; }
+.tl-case-body .alignwide,
+.tl-case-body figure { max-width: 100%; }
+
+.tl-case-sec { scroll-margin-top: 1.5rem; }
+.tl-case-sec > h2 {
+	display: grid;
+	grid-template-columns: 2.4rem 1fr;
+	gap: 0.75rem;
+	align-items: baseline;
+	margin: var(--tl-s-5) 0 var(--tl-s-3);
+	padding-bottom: 0.9rem;
+	border-bottom: 1px solid var(--tl-line-2);
+}
+.tl-case-sec > h2 .n { font-family: var(--tl-f-mono); font-size: 0.72rem; color: var(--tl-faint); letter-spacing: 0.08em; }
+
+/* 개선 로그 — 항목이 0개면 섹션 자체가 렌더링되지 않습니다(플러그인에서 처리). */
+.tl-log { border-top: 1px solid var(--tl-line-2); margin: var(--tl-s-3) 0 0; }
+.tl-log-row {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.3rem;
+	padding: var(--tl-s-3) 0;
+	border-bottom: 1px solid var(--tl-line);
+}
+@media (min-width: 820px) {
+	.tl-log-row { grid-template-columns: 7rem 6rem minmax(0, 1fr); gap: 1.6rem; align-items: baseline; }
+}
+.tl-log-date { font-family: var(--tl-f-mono); font-size: 0.64rem; color: var(--tl-faint); letter-spacing: 0.08em; }
+.tl-log-kind {
+	font-family: var(--tl-f-mono);
+	font-size: 0.6rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--tl-muted);
+}
+.tl-log-kind[data-kind="즉시"] { color: var(--tl-text-2); }
+.tl-log-body { font-size: 0.88rem; line-height: 1.85; color: var(--tl-text-2); }
+.tl-log-body .fix { display: block; color: var(--tl-muted); margin-top: 0.25rem; }
+
+/* ─────────── Blog ─────────── */
+
+.tl-post-body { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-post-body { padding: var(--tl-s-6) 0; } }
+.tl-post-body > * { max-width: 42rem; }
+.tl-post-body p,
+.tl-post-body li { font-size: 1rem; line-height: 1.95; }
+.tl-post-body h2 {
+	font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+	margin: var(--tl-s-5) 0 var(--tl-s-2);
+	padding-top: var(--tl-s-3);
+	border-top: 1px solid var(--tl-line);
+}
+.tl-post-body h3 { font-size: 1.1rem; margin: var(--tl-s-4) 0 var(--tl-s-2); }
+
+/* 「최종 확인」 표기 — 설계안 09번. 운영 부담이 아니라 브랜드 자산입니다. */
+.tl-checked {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+	align-items: baseline;
+	border: 1px solid var(--tl-line);
+	border-left: 3px solid var(--tl-line-2);
+	background: var(--tl-surface);
+	padding: 0.85rem 1.1rem;
+	margin: 0 0 var(--tl-s-4);
+	font-size: 0.82rem;
+	color: var(--tl-muted);
+}
+.tl-checked .l {
+	font-family: var(--tl-f-mono);
+	font-size: 0.6rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+}
+
+/* 글 하단 연결 — 이 링크가 없으면 Work 와 Blog 가 각자 존재할 뿐 순환이 돌지 않습니다. */
+.tl-bridge {
+	border-top: 1px solid var(--tl-line-2);
+	margin-top: var(--tl-s-5);
+	padding-top: var(--tl-s-3);
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+.tl-bridge a { font-size: 0.9rem; color: var(--tl-text-2); }
+
+/* ─────────── 폼 (Contact) ─────────── */
+
+.tl-form { display: flex; flex-direction: column; gap: var(--tl-s-3); }
+.tl-field { display: flex; flex-direction: column; gap: 0.5rem; }
+.tl-field > label:not(.tl-consent) {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+}
+.tl-field .req { color: var(--tl-text-2); }
+.tl-field .hint { font-size: 0.8rem; color: var(--tl-muted); line-height: 1.7; }
+
+.tl-form input[type="text"],
+.tl-form input[type="email"],
+.tl-form input[type="tel"],
+.tl-form input[type="url"],
+.tl-form select,
+.tl-form textarea {
+	width: 100%;
+	background: var(--tl-surface-2);
+	border: 1px solid var(--tl-line-2);
+	color: var(--tl-text);
+	font-family: var(--tl-f-body);
+	font-size: 1rem; /* iOS 자동 확대 방지 — 16px 미만으로 내리지 않습니다. */
+	font-weight: 300;
+	line-height: 1.7;
+	padding: 0.8rem 1rem;
+	border-radius: 0;
+}
+.tl-form textarea { min-height: 11rem; resize: vertical; }
+.tl-form ::placeholder { color: var(--tl-faint); }
+
+.tl-consent { display: grid; grid-template-columns: 1.2rem 1fr; gap: 0.7rem; align-items: start; font-size: 0.86rem; color: var(--tl-text-2); line-height: 1.75; }
+.tl-consent input { margin-top: 0.4em; width: 1.1rem; height: 1.1rem; accent-color: var(--tl-text); }
+
+/* 터치 타깃 44px 이상 */
+.tl-form button,
+.tl-form input[type="submit"] { min-height: 2.75rem; }
+
+/* 허니팟 — 사람에게는 보이지 않고 스크린리더도 읽지 않습니다. */
+.tl-hp { position: absolute !important; left: -9999px !important; }
+
+/* ─────────── 검색 · 404 ─────────── */
+
+.tl-narrow { max-width: 40rem; }
+.tl-empty { padding: var(--tl-s-5) 0 var(--tl-s-6); }
+.tl-empty p { color: var(--tl-muted); }
+
+.wp-block-search__inside-wrapper { border: 1px solid var(--tl-line-2); background: var(--tl-surface-2); }
+.wp-block-search__input {
+	background: transparent;
+	border: 0;
+	color: var(--tl-text);
+	font-family: var(--tl-f-body);
+	font-size: 1rem;
+	padding: 0.8rem 1rem;
+}
+.wp-block-search__button {
+	background: var(--tl-text);
+	color: var(--tl-bg);
+	border: 0;
+	font-size: 0.88rem;
+	padding: 0 1.3rem;
+}
+
+/* ─────────── 페이지네이션 ─────────── */
+
+.tl-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem 1.2rem;
+	border-top: 1px solid var(--tl-line);
+	margin-top: var(--tl-s-5);
+	padding-top: var(--tl-s-3);
+	font-family: var(--tl-f-mono);
+	font-size: 0.74rem;
+	letter-spacing: 0.08em;
+}
+.tl-pagination a { color: var(--tl-muted); text-decoration: none; }
+.tl-pagination a:hover { color: var(--tl-text); }
+.tl-pagination .current { color: var(--tl-text); }
+
+/* ============================================================
+   블록 대응 보정
+   기준 HTML 은 순수 마크업이고, 실제 화면은 코어 블록이 만듭니다.
+   그 차이를 메우는 규칙만 여기에 둡니다. 새 스타일을 만드는 자리가 아닙니다.
+   ============================================================ */
+
+/* 헤더 --------------------------------------------------- */
+
+.tl-header { padding-top: 0; padding-bottom: 0; }
+.tl-nav { gap: var(--tl-s-2); }
+
+.tl-brand { gap: 0; flex: none; }
+.tl-brand .wp-block-site-title { margin: 0; line-height: 1.15; }
+.tl-brand .wp-block-site-title a {
+	font-family: var(--tl-f-disp);
+	font-weight: 800;
+	font-size: 1.15rem;
+	letter-spacing: 0.01em;
+	color: var(--tl-text);
+	text-decoration: none;
+}
+.tl-brand .wp-block-site-title a:hover { color: var(--tl-text-hi); }
+.tl-brand .d {
+	font-family: var(--tl-f-mono);
+	font-size: 0.58rem;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--tl-faint);
+	margin: 0.25rem 0 0;
+	line-height: 1;
+}
+
+.tl-nav .tl-menu { margin-left: auto; }
+.tl-nav .tl-menu .wp-block-navigation__container { gap: 1.9rem; }
+.tl-nav .tl-menu .wp-block-navigation-item__content {
+	color: var(--tl-text-2);
+	text-decoration: none;
+	font-size: 0.88rem;
+	transition: color 0.18s;
+}
+.tl-nav .tl-menu .wp-block-navigation-item__content:hover,
+.tl-nav .tl-menu .current-menu-item .wp-block-navigation-item__content { color: var(--tl-text); }
+
+.tl-nav-cta-wrap { flex: none; margin-left: 0.9rem; }
+@media (min-width: 860px) { .tl-nav-cta-wrap { margin-left: 2rem; } }
+
+.tl-nav-cta-btn .wp-block-button__link {
+	font-size: 0.84rem;
+	font-weight: 400;
+	padding: 0.5rem 1.15rem;
+	white-space: nowrap;
+	border-radius: 0;
+}
+
+/* 오버레이 메뉴가 열려도 「작업 의뢰」는 접히지 않습니다. — 설계안 12번 */
+.tl-nav .wp-block-navigation__responsive-container-open,
+.tl-nav .wp-block-navigation__responsive-container-close {
+	color: var(--tl-text-2);
+	padding: 0.4rem;
+}
+.tl-nav .wp-block-navigation__responsive-container.is-menu-open {
+	background-color: var(--tl-bg);
+	padding: var(--tl-s-4) var(--tl-pad);
+}
+.tl-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content {
+	font-size: 1.15rem;
+	color: var(--tl-text);
+}
+
+/* 푸터 --------------------------------------------------- */
+
+.tl-foot .b,
+.tl-foot .dom,
+.tl-foot .links p { margin: 0; }
+.tl-foot .links { gap: 1.3rem; }
+.tl-foot .links p { font-size: 0.84rem; line-height: 1; }
+.tl-foot .links a { text-decoration: none; }
+.tl-foot .dom { margin-left: auto; }
+
+/* 본문 여백 — 루트 패딩은 theme.json 이 잡습니다. 섹션 내부 폭만 맞춥니다. */
+.tl-sec > .wp-block-group,
+.tl-gallery > .wp-block-group,
+.tl-contact-in > .wp-block-group { max-width: var(--tl-max); margin-inline: auto; }
+
+/* 문의 섹션은 화면 끝까지 면이 이어져야 합니다(유일한 면 전환).
+   루트 좌우 패딩만큼 밖으로 빼고 같은 값을 안쪽 패딩으로 되돌려 줍니다.
+   theme.json 의 루트 패딩이 바뀌어도 따라갑니다. */
+.tl-contact {
+	margin-left: calc(var(--wp--style--root--padding-left, var(--tl-pad)) * -1);
+	margin-right: calc(var(--wp--style--root--padding-right, var(--tl-pad)) * -1);
+	padding-left: var(--wp--style--root--padding-left, var(--tl-pad));
+	padding-right: var(--wp--style--root--padding-right, var(--tl-pad));
+}
+
+/* 코어 버튼을 기준 HTML 의 .tl-btn 과 같은 형태로 */
+.wp-block-button__link { border-radius: 0; }
+.is-style-tl-ghost .wp-block-button__link,
+.tl-btn-ghost .wp-block-button__link {
+	background: transparent;
+	border: 1px solid var(--tl-line-2);
+	color: var(--tl-text-2);
+	font-weight: 400;
+}
+.is-style-tl-ghost .wp-block-button__link:hover,
+.tl-btn-ghost .wp-block-button__link:hover {
+	background: transparent;
+	border-color: var(--tl-muted);
+	color: var(--tl-text);
+}
+
+/* 모바일 Hero 는 CTA 1개 */
+@media (max-width: 619px) {
+	.tl-hero .tl-actions .tl-btn-ghost { display: none; }
+}
+
+/* 코어 블록이 만드는 문단에 남는 기본 여백 정리 ------------- */
+
+.tl-make p,
+.tl-step p,
+.tl-p p,
+.tl-sec-head p,
+.tl-hero-in p { margin-block: 0; }
+
+.tl-makes,
+.tl-steps,
+.tl-prin { row-gap: 0; }
+
+/* 아카이브 카드 --------------------------------------------- */
+
+.tl-work-card .tl-work-fig { margin-bottom: 0; }
+.tl-work-card .tl-card-t { margin-top: var(--tl-s-3); }
+.tl-work-card .tl-tagrow { margin-top: 0.9rem; }
+
+/* FAQ (core/details) ---------------------------------------- */
+
+.wp-block-details {
+	border-top: 1px solid var(--tl-line);
+	padding: var(--tl-s-3) 0;
+}
+.wp-block-details:last-of-type { border-bottom: 1px solid var(--tl-line); }
+.wp-block-details summary {
+	font-family: var(--tl-f-disp);
+	font-weight: 600;
+	font-size: 1.02rem;
+	letter-spacing: -0.02em;
+	color: var(--tl-text);
+	cursor: pointer;
+	list-style: none;
+	display: flex;
+	gap: 0.9rem;
+	align-items: baseline;
+}
+.wp-block-details summary::-webkit-details-marker { display: none; }
+.wp-block-details summary::before {
+	content: "+";
+	font-family: var(--tl-f-mono);
+	font-size: 0.9rem;
+	color: var(--tl-faint);
+	flex: none;
+	width: 1rem;
+}
+.wp-block-details[open] summary::before { content: "−"; color: var(--tl-text-2); }
+.wp-block-details summary:hover { color: var(--tl-text-hi); }
+.wp-block-details > *:not(summary) {
+	margin-top: var(--tl-s-2);
+	padding-left: 1.9rem;
+	color: var(--tl-muted);
+	max-width: 40em;
+}
+
+/* Contact 페이지 곁단 --------------------------------------- */
+
+.tl-aside { display: flex; flex-direction: column; gap: var(--tl-s-4); }
+.tl-aside .tl-flow { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* 폼 오류 ---------------------------------------------------- */
+
+.tl-formerror {
+	border: 1px solid var(--tl-line-2);
+	border-left: 3px solid var(--tl-text);
+	background: var(--tl-surface);
+	padding: 1rem 1.2rem;
+	margin-bottom: var(--tl-s-3);
+}
+.tl-formerror .l {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--tl-text);
+	display: block;
+	margin-bottom: 0.35rem;
+}
+.tl-formerror p { margin: 0; font-size: 0.9rem; color: var(--tl-text-2); }
+
+/* 필수 표시 — 색만으로 구분하지 않습니다. 글자로도 읽혀야 합니다. */
+.tl-field .req {
+	font-family: var(--tl-f-mono);
+	font-size: 0.55rem;
+	letter-spacing: 0.12em;
+	color: var(--tl-text-2);
+	border: 1px solid var(--tl-line-2);
+	padding: 0.1rem 0.35rem;
+	margin-left: 0.4rem;
+	text-transform: uppercase;
+	vertical-align: 0.1em;
+}
+
+/* ============================================================
+   검수에서 나온 보완 — 2026-08-25
+   확정 디자인의 토큰·리듬은 그대로 두고, 실제로 깨지는 지점만 고칩니다.
+   ============================================================ */
+
+/* 1. 헤더가 좁은 화면에서 가로로 밀리지 않게.
+      「작업 의뢰」는 절대 줄어들지 않고, 줄어드는 쪽은 항상 메뉴입니다. */
+.tl-header { max-width: 100%; }
+.tl-nav { min-width: 0; flex-wrap: nowrap; }
+.tl-brand { flex: none; }
+.tl-brand .wp-block-site-title,
+.tl-brand .wp-block-site-title a,
+.tl-brand .d { white-space: nowrap; }
+/* 아주 좁은 화면에서는 디스크립터를 접습니다. 로고와 「작업 의뢰」가 우선입니다. */
+@media (max-width: 400px) { .tl-brand .d { display: none; } }
+.tl-nav .tl-menu { min-width: 0; }
+.tl-nav-cta-wrap,
+.tl-nav-cta { flex: none; }
+
+/* 2. 작은 글자의 대비.
+      확정 팔레트는 그대로 두되, 0.7rem 미만으로 읽어야 하는 글자에는
+      text-faint(대비 3.06:1)를 쓰지 않고 text-muted(5.29:1)를 씁니다.
+      팔레트를 바꾸는 것이 아니라 어느 층을 어디에 쓰는지만 정한 규칙입니다. */
+.tl-sec-label,
+.tl-make .k,
+.tl-work-meta dt,
+.tl-case-meta dt,
+.tl-terms dt,
+.tl-field > label:not(.tl-consent),
+.tl-brand .d,
+.tl-toc h2,
+.tl-toc a .n,
+.tl-log-date,
+.tl-tagrow,
+.tl-checked .l,
+.tl-formerror .l,
+.tl-foot .dom,
+.tl-j .date,
+.tl-j .wp-block-post-date { color: var(--tl-muted); }
+
+/* 3. 유형·역할 표기가 한 덩어리로 읽히지 않게 가운뎃점으로 끊습니다.
+      메타 표기에서 이미 쓰는 구분자와 같은 것입니다. */
+.tl-tagrow { gap: 0.4rem 0.7rem; align-items: baseline; }
+.tl-tagrow > * + *::before {
+	content: "·";
+	color: var(--tl-line-2);
+	padding-right: 0.7rem;
+}
+.tl-tagrow p { margin: 0; }
+
+/* 4. 케이스 본문의 제목 처리를 블로그 본문과 맞춥니다.
+      같은 위계의 제목이 화면마다 다르게 보이면 위계 자체를 못 믿게 됩니다. */
+.tl-case-body h2 {
+	font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+	margin: var(--tl-s-5) 0 var(--tl-s-2);
+	padding-top: var(--tl-s-3);
+	border-top: 1px solid var(--tl-line);
+	scroll-margin-top: 1.5rem;
+}
+.tl-case-body h3 { font-size: 1.1rem; margin: var(--tl-s-4) 0 var(--tl-s-2); }
+/* 번호가 붙는 섹션 제목만 예외 — 위쪽 선 대신 아래쪽 선을 씁니다. */
+.tl-case-sec > h2 { border-top: 0; padding-top: 0; }
+
+/* 5. 손가락으로 누르는 화면에서 링크 타깃을 44px 이상으로.
+      글자 크기는 그대로 두고 눌리는 면적만 넓힙니다. */
+@media (max-width: 859px) {
+	.tl-foot .links a,
+	.tl-work-link { display: inline-flex; align-items: center; min-height: 44px; }
+	/* 태그 줄은 보조 메타라 높이를 키우지 않고 위아래 여백만 넓힙니다.
+	   여기에 44px 를 강제하면 값과 구분자의 기준선이 어긋납니다. */
+	.tl-tagrow a { padding-block: 0.35rem; }
+	.tl-foot .links { gap: 0 1.3rem; }
+	.tl-j { padding-block: var(--tl-s-3); }
+}
+
+/* 6. 문의 폼의 동의문은 라벨이 아니라 문장입니다. */
+.tl-consent { font-family: var(--tl-f-body); font-weight: 300; letter-spacing: 0; text-transform: none; }
+.tl-consent a { color: var(--tl-text-2); }
+
+/* 7. 아카이브 카드 그리드의 세로 간격은 섹션 간격과 같은 층을 씁니다. */
+.tl-work-grid { row-gap: var(--tl-s-5); }
+@media (min-width: 760px) { .tl-work-grid { row-gap: var(--tl-s-6); } }
+
+/* 8. Contact 페이지의 두 단 사이 간격 (모바일에서 세로로 쌓일 때). */
+.tl-contact-grid { row-gap: 3rem; }
+.tl-work-cap { row-gap: var(--tl-s-3); }
+
+/* ============================================================
+   2차 검수 보완 — 2026-08-25
+   ============================================================ */
+
+/* 9. 내비 전환 폭을 확정 디자인의 860px 에 맞춥니다.
+      코어 Navigation 의 기본 전환점은 600px 이라, 600~859px 구간에서
+      가로 메뉴가 그대로 남아 로고·버튼과 부딪힙니다. */
+@media (max-width: 859px) {
+	.tl-nav .wp-block-navigation__responsive-container:not(.is-menu-open):not(.hidden-by-default) {
+		display: none;
+	}
+	.tl-nav .wp-block-navigation__responsive-container-open:not(.always-shown) {
+		display: flex;
+	}
+}
+
+/* 10. 대표 이미지가 없는 사례에서 빈 상자가 남지 않게.
+      대표 이미지 블록은 이미지가 없으면 아무것도 출력하지 않습니다.
+      (:empty 는 템플릿의 줄바꿈 때문에 걸리지 않고, img 유무로 판단하면
+       기준 HTML 의 임시 색면 자리표시까지 같이 사라집니다.) */
+.tl-work-fig:not(:has(.wp-block-post-featured-image)):not(:has(.tl-shot)) { display: none; }
+
+/* 11. 글 사이 이동(이전 글 / 다음 글). 쿼리 페이지네이션과 같은 형태로 둡니다. */
+.tl-pagination .wp-block-post-navigation-link { font-family: var(--tl-f-body); font-size: 0.86rem; }
+.tl-pagination .wp-block-post-navigation-link a { color: var(--tl-text-2); text-decoration: none; }
+.tl-pagination .wp-block-post-navigation-link a:hover { color: var(--tl-text); }
+
+/* 12. Hero 가 전체 폭으로 나가도 안쪽 글은 본문 폭 안에 머뭅니다. */
+.tl-hero.alignfull > .tl-hero-in { max-width: var(--tl-max); margin-inline: auto; }
+
+/* 13. 접수 완료 안내 — 오류 안내와 같은 틀을 쓰되 강조선만 다르게. */
+.tl-formnotice {
+	border: 1px solid var(--tl-line-2);
+	border-left: 3px solid var(--tl-text-2);
+	background: var(--tl-surface);
+	padding: 1rem 1.2rem;
+	margin-bottom: var(--tl-s-3);
+}
+.tl-formnotice .l {
+	font-family: var(--tl-f-mono);
+	font-size: 0.62rem;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--tl-muted);
+	display: block;
+	margin-bottom: 0.35rem;
+}
+.tl-formnotice p { margin: 0; font-size: 0.9rem; color: var(--tl-text-2); }
+
+/* 14. 브라우저 기본 검증 메시지가 뜨는 필드도 초점이 보이게. */
+.tl-form :user-invalid { border-color: var(--tl-text-2); }

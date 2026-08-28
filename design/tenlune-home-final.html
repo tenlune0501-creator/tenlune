@@ -1,0 +1,586 @@
+<title>Tenlune Home 최종안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@200;300;400;500&display=swap">
+
+<style>
+/* ============================================================
+   Tenlune — Home
+   최종 디자인 기준안 (Dark)
+   토큰 이름은 theme.json 초안과 1:1로 대응합니다.
+   ============================================================ */
+
+:root {
+  /* --- color : 무채색만. 컬러는 작업물 이미지에서만 나옵니다 --- */
+  --tl-bg:        #0C0E11;   /* base        */
+  --tl-surface:   #131519;   /* surface     */
+  --tl-surface-2: #191C22;   /* surface-alt */
+  --tl-shot-bg:   #101318;   /* work-frame  */
+  --tl-line:      #1E222A;   /* line        */
+  --tl-line-2:    #2C313A;   /* line-strong */
+  --tl-faint:     #5C6067;   /* text-faint  */
+  --tl-muted:     #82868D;   /* text-muted  */
+  --tl-text-2:    #B4B7BC;   /* text-second */
+  --tl-text:      #EAE8E3;   /* text        */
+  --tl-text-hi:   #FFFFFF;   /* text-strong */
+
+  /* --- type --- */
+  --tl-f-disp: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --tl-f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --tl-f-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* --- spacing scale --- */
+  --tl-s-1: 0.5rem;
+  --tl-s-2: 1rem;
+  --tl-s-3: 1.6rem;
+  --tl-s-4: 2.6rem;
+  --tl-s-5: 4rem;
+  --tl-s-6: 5.5rem;
+  --tl-s-7: 7rem;
+  --tl-s-8: 10rem;
+
+  /* --- layout --- */
+  --tl-max: 1180px;
+  --tl-pad: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  :root { --tl-pad: 2.75rem; }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation: none !important; transition: none !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--tl-bg);
+  color: var(--tl-text);
+  font-family: var(--tl-f-body);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--tl-text);
+  outline-offset: 3px;
+}
+
+.tl-wrap {
+  width: 100%;
+  max-width: var(--tl-max);
+  margin: 0 auto;
+  padding: 0 var(--tl-pad);
+}
+
+.tl-skip {
+  position: absolute; left: -9999px;
+  background: var(--tl-text); color: var(--tl-bg);
+  padding: 0.7rem 1.2rem; font-size: 0.9rem; z-index: 200;
+}
+.tl-skip:focus { left: 1rem; top: 1rem; }
+
+/* ─────────── header ─────────── */
+
+.tl-nav { display: flex; align-items: center; gap: var(--tl-s-2); padding: var(--tl-s-3) 0; }
+
+.tl-brand { display: flex; flex-direction: column; line-height: 1.15; text-decoration: none; color: inherit; }
+.tl-brand .n { font-family: var(--tl-f-disp); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.01em; }
+.tl-brand .d { font-family: var(--tl-f-mono); font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tl-faint); margin-top: 0.25rem; }
+
+.tl-menu { display: none; gap: 1.9rem; margin-left: auto; align-items: center; }
+@media (min-width: 860px) { .tl-menu { display: flex; } }
+.tl-menu a { color: var(--tl-text-2); text-decoration: none; font-size: 0.88rem; transition: color 0.18s; }
+.tl-menu a:hover { color: var(--tl-text); }
+
+.tl-nav-cta {
+  margin-left: auto; font-size: 0.84rem; font-weight: 400;
+  padding: 0.5rem 1.15rem; background: var(--tl-text); color: var(--tl-bg);
+  text-decoration: none; white-space: nowrap; transition: background 0.18s;
+}
+@media (min-width: 860px) { .tl-nav-cta { margin-left: 2rem; } }
+.tl-nav-cta:hover { background: var(--tl-text-hi); }
+
+/* ─────────── hero ─────────── */
+
+.tl-hero { position: relative; overflow: hidden; }
+.tl-hero::before {
+  content: "";
+  position: absolute; inset: -22% -12% auto -12%; height: 44rem;
+  background: radial-gradient(ellipse 52% 46% at 50% 0%,
+    rgba(234,232,227,0.055), rgba(234,232,227,0.018) 44%, transparent 72%);
+  pointer-events: none;
+}
+.tl-hero-in { position: relative; padding: var(--tl-s-6) 0 var(--tl-s-7); }
+@media (min-width: 900px) { .tl-hero-in { padding: 11rem 0 12rem; } }
+
+.tl-eyebrow {
+  font-family: var(--tl-f-mono); font-size: 0.66rem;
+  letter-spacing: 0.17em; text-transform: uppercase; color: var(--tl-muted);
+  margin: 0 0 var(--tl-s-4); display: flex; align-items: center; gap: 0.75rem;
+}
+.tl-eyebrow::before { content: ""; width: 1.9rem; height: 1px; background: var(--tl-line-2); }
+
+.tl-h1 {
+  font-family: var(--tl-f-disp); font-weight: 800;
+  font-size: clamp(2.4rem, 7.2vw, 5rem);
+  line-height: 1.22; letter-spacing: -0.038em;
+  margin: 0 0 var(--tl-s-3); max-width: 15em; text-wrap: balance;
+}
+
+.tl-lead { font-size: clamp(1rem, 1.6vw, 1.16rem); line-height: 1.85; color: var(--tl-text-2); max-width: 30em; margin: 0 0 0.9rem; }
+.tl-lead-2 { font-size: 0.93rem; line-height: 1.85; color: var(--tl-muted); max-width: 32em; margin: 0 0 var(--tl-s-4); }
+
+.tl-actions { display: flex; flex-wrap: wrap; gap: 0.9rem; }
+
+.tl-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.92rem 1.8rem; font-size: 0.96rem; font-weight: 400;
+  text-decoration: none; border: 1px solid;
+  transition: background 0.18s, color 0.18s, gap 0.18s, border-color 0.18s;
+}
+.tl-btn--solid { background: var(--tl-text); border-color: var(--tl-text); color: var(--tl-bg); font-weight: 500; }
+.tl-btn--solid:hover { background: var(--tl-text-hi); border-color: var(--tl-text-hi); gap: 0.95rem; }
+.tl-btn--ghost { background: transparent; border-color: var(--tl-line-2); color: var(--tl-text-2); }
+.tl-btn--ghost:hover { border-color: var(--tl-muted); color: var(--tl-text); }
+
+/* ─────────── section frame ─────────── */
+
+.tl-sec { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-sec { padding: var(--tl-s-6) 0; } }
+
+.tl-sec-head { margin: 0 0 var(--tl-s-4); max-width: 40em; }
+.tl-sec-label {
+  font-family: var(--tl-f-mono); font-size: 0.64rem;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--tl-faint);
+  display: block; margin-bottom: var(--tl-s-2);
+}
+.tl-sec-title {
+  font-family: var(--tl-f-disp); font-weight: 700;
+  font-size: clamp(1.5rem, 3.1vw, 2.1rem);
+  line-height: 1.42; letter-spacing: -0.028em; margin: 0; text-wrap: balance;
+}
+.tl-sec-desc { font-size: 0.95rem; color: var(--tl-muted); line-height: 1.9; margin: 0.9rem 0 0; max-width: 34em; }
+
+/* ─────────── 01 무엇을 만드나 : 4열 ─────────── */
+
+.tl-makes { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 640px)  { .tl-makes { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
+@media (min-width: 1000px) { .tl-makes { grid-template-columns: repeat(4, 1fr); column-gap: 2rem; } }
+
+.tl-make { border-top: 1px solid var(--tl-line-2); padding: var(--tl-s-3) 0 1.9rem; }
+.tl-make .k { font-family: var(--tl-f-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--tl-faint); display: block; margin-bottom: 0.8rem; }
+.tl-make .t { font-family: var(--tl-f-disp); font-weight: 700; font-size: 1.04rem; letter-spacing: -0.02em; line-height: 1.5; display: block; margin-bottom: 0.5rem; }
+.tl-make .d { font-size: 0.87rem; color: var(--tl-muted); line-height: 1.85; display: block; }
+
+/* ─────────── 02 문제를 정리하는 방식 : 6열, 최고 밀도 ─────────── */
+
+.tl-steps { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 620px)  { .tl-steps { grid-template-columns: 1fr 1fr; column-gap: 2rem; } }
+@media (min-width: 1040px) { .tl-steps { grid-template-columns: repeat(6, 1fr); column-gap: 1.4rem; } }
+
+.tl-step { border-top: 1px solid var(--tl-line); padding: 1.3rem 0 var(--tl-s-3); }
+.tl-step .k { font-family: var(--tl-f-mono); font-size: 0.63rem; color: var(--tl-muted); letter-spacing: 0.08em; display: block; margin-bottom: 0.7rem; }
+.tl-step .t { font-family: var(--tl-f-disp); font-weight: 600; font-size: 0.95rem; display: block; margin-bottom: 0.4rem; line-height: 1.5; }
+.tl-step .d { font-size: 0.83rem; color: var(--tl-muted); line-height: 1.8; display: block; }
+
+/* ═══════════ 03 제작 사례 : 전시 ═══════════ */
+
+.tl-gallery { padding: var(--tl-s-5) 0 var(--tl-s-5); }
+@media (min-width: 900px) { .tl-gallery { padding: 8rem 0 6rem; } }
+.tl-gallery .tl-sec-head { margin-bottom: var(--tl-s-5); }
+@media (min-width: 900px) { .tl-gallery .tl-sec-head { margin-bottom: var(--tl-s-6); } }
+
+.tl-works { display: flex; flex-direction: column; gap: 6.5rem; }
+@media (min-width: 900px) { .tl-works { gap: var(--tl-s-8); } }
+
+.tl-work-fig { margin: 0 0 var(--tl-s-3); }
+@media (min-width: 900px) { .tl-work-fig { margin-bottom: var(--tl-s-4); } }
+
+/* 작업물 프레임 — 테두리·그림자 없음.
+   실제 제작 시 .tl-shot 안의 플레이스홀더를 <img>로 교체합니다. */
+.tl-shot {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--tl-shot-bg);
+  overflow: hidden;
+}
+@media (max-width: 620px) { .tl-shot { aspect-ratio: 4 / 3; } }
+
+.tl-shot img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+
+.tl-shot-ph { position: absolute; inset: 0; }
+.tl-shot-note {
+  position: absolute; left: 0.9rem; bottom: 0.9rem;
+  font-family: var(--tl-f-mono); font-size: 0.6rem; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.82); background: rgba(0,0,0,0.55);
+  padding: 0.3rem 0.6rem;
+}
+
+/* 작업물이 준비되기 전 임시 색면. 실제 이미지 투입 시 이 두 규칙은 삭제합니다. */
+.tl-ph--1 { background: linear-gradient(128deg, #17414E 0%, #2C7370 32%, #63A188 60%, #C8A96E 88%, #E3C9A0 100%); }
+.tl-ph--2 { background: linear-gradient(142deg, #2A2140 0%, #533A63 30%, #9C5A6B 58%, #D08A6A 82%, #E8C39A 100%); }
+
+.tl-work-cap { display: grid; grid-template-columns: 1fr; gap: var(--tl-s-3); }
+@media (min-width: 880px) { .tl-work-cap { grid-template-columns: minmax(0, 1fr) 15rem; gap: 3.5rem; align-items: start; } }
+
+.tl-work-t {
+  font-family: var(--tl-f-disp); font-weight: 700;
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  letter-spacing: -0.028em; line-height: 1.45; margin: 0 0 0.75rem;
+}
+.tl-work-p { font-size: 0.93rem; line-height: 1.9; color: var(--tl-muted); margin: 0 0 1.3rem; max-width: 32em; }
+
+.tl-work-link {
+  font-size: 0.88rem; color: var(--tl-text-2); text-decoration: none;
+  display: inline-flex; gap: 0.5rem; padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--tl-line-2);
+  transition: gap 0.18s, color 0.18s, border-color 0.18s;
+}
+.tl-work-link:hover { gap: 0.85rem; color: var(--tl-text); border-bottom-color: var(--tl-muted); }
+
+.tl-work-meta { display: flex; flex-direction: column; gap: 0.95rem; padding-top: 0.35rem; margin: 0; }
+.tl-work-meta > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.tl-work-meta dt { font-family: var(--tl-f-mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tl-faint); }
+.tl-work-meta dd { font-size: 0.84rem; color: var(--tl-text-2); line-height: 1.6; margin: 0; }
+
+.tl-works-note { margin-top: var(--tl-s-6); padding-top: var(--tl-s-3); border-top: 1px solid var(--tl-line); }
+@media (min-width: 900px) { .tl-works-note { margin-top: var(--tl-s-7); } }
+.tl-works-note p { font-size: 0.88rem; color: var(--tl-muted); margin: 0; }
+
+/* ─────────── 04 일하는 방식 : 3열 ─────────── */
+
+.tl-prin { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .tl-prin { grid-template-columns: repeat(3, 1fr); column-gap: 3rem; } }
+.tl-p { border-top: 1px solid var(--tl-line-2); padding: var(--tl-s-3) 0 var(--tl-s-3); }
+.tl-p .q { font-family: var(--tl-f-disp); font-weight: 700; font-size: 1.04rem; line-height: 1.6; letter-spacing: -0.022em; display: block; margin-bottom: 0.7rem; }
+.tl-p .d { font-size: 0.87rem; color: var(--tl-muted); line-height: 1.85; display: block; }
+
+/* ─────────── 05 기록 : 행 ─────────── */
+
+.tl-journal { border-top: 1px solid var(--tl-line); }
+.tl-j {
+  display: grid; grid-template-columns: 1fr; gap: 0.35rem;
+  padding: var(--tl-s-3) 0; border-bottom: 1px solid var(--tl-line);
+  text-decoration: none; color: inherit; transition: padding-left 0.22s;
+}
+@media (min-width: 780px) {
+  .tl-j { grid-template-columns: 8rem minmax(0,1fr) 10rem; gap: 2rem; align-items: baseline; }
+  .tl-j:hover { padding-left: 0.7rem; }
+}
+.tl-j .date { font-family: var(--tl-f-mono); font-size: 0.64rem; color: var(--tl-faint); letter-spacing: 0.08em; }
+.tl-j .title { font-family: var(--tl-f-disp); font-weight: 500; font-size: 1rem; line-height: 1.6; letter-spacing: -0.018em; color: var(--tl-text); transition: color 0.18s; }
+.tl-j:hover .title { color: var(--tl-text-hi); }
+.tl-j .cat { font-family: var(--tl-f-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tl-muted); }
+@media (min-width: 780px) { .tl-j .cat { text-align: right; } }
+
+/* ─────────── 06 문의 : 유일한 면 전환 ─────────── */
+
+.tl-contact { background: var(--tl-surface); border-top: 1px solid var(--tl-line); }
+.tl-contact-in { padding: var(--tl-s-5) 0; }
+@media (min-width: 900px) { .tl-contact-in { padding: var(--tl-s-7) 0; } }
+
+.tl-contact-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; }
+@media (min-width: 940px) { .tl-contact-grid { grid-template-columns: 1.15fr 1fr; gap: 5rem; } }
+
+.tl-contact-h {
+  font-family: var(--tl-f-disp); font-weight: 800;
+  font-size: clamp(1.7rem, 3.7vw, 2.5rem);
+  line-height: 1.35; letter-spacing: -0.035em; margin: 0 0 1.2rem; text-wrap: balance;
+}
+.tl-contact-p { font-size: 0.96rem; color: var(--tl-text-2); line-height: 1.9; margin: 0 0 var(--tl-s-3); max-width: 26em; }
+
+.tl-flow { list-style: none; margin: var(--tl-s-3) 0 0; padding: var(--tl-s-3) 0 0; border-top: 1px solid var(--tl-line-2); display: flex; flex-direction: column; gap: 0.85rem; }
+.tl-flow li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.7rem; font-size: 0.87rem; color: var(--tl-text-2); line-height: 1.75; }
+.tl-flow .k { font-family: var(--tl-f-mono); font-size: 0.64rem; color: var(--tl-muted); padding-top: 0.28em; }
+
+.tl-terms { border-top: 1px solid var(--tl-line-2); padding-top: var(--tl-s-3); }
+.tl-terms dl { display: grid; grid-template-columns: 1fr; gap: 1.3rem; margin: 0; }
+.tl-terms dt { font-family: var(--tl-f-mono); font-size: 0.61rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--tl-faint); margin-bottom: 0.35rem; }
+.tl-terms dd { margin: 0; }
+.tl-terms .big { font-family: var(--tl-f-disp); font-weight: 700; font-size: 1.3rem; letter-spacing: -0.028em; line-height: 1.45; }
+.tl-terms .sm { font-size: 0.83rem; color: var(--tl-muted); line-height: 1.8; margin-top: 0.35rem; display: block; }
+
+/* ─────────── footer ─────────── */
+
+.tl-foot { padding: 3rem 0 var(--tl-s-5); border-top: 1px solid var(--tl-line); }
+.tl-foot-in { display: flex; flex-wrap: wrap; gap: var(--tl-s-3) 3rem; align-items: baseline; }
+.tl-foot .b { font-family: var(--tl-f-disp); font-weight: 800; font-size: 1rem; }
+.tl-foot .links { display: flex; flex-wrap: wrap; gap: 1.3rem; }
+.tl-foot .links a { font-size: 0.84rem; color: var(--tl-muted); text-decoration: none; transition: color 0.18s; }
+.tl-foot .links a:hover { color: var(--tl-text); }
+.tl-foot .dom { font-family: var(--tl-f-mono); font-size: 0.61rem; letter-spacing: 0.08em; color: var(--tl-faint); margin-left: auto; }
+</style>
+
+<a class="tl-skip" href="#main">본문으로 건너뛰기</a>
+
+<header>
+  <div class="tl-wrap">
+    <nav class="tl-nav" aria-label="주요 메뉴">
+      <a class="tl-brand" href="/">
+        <span class="n">Tenlune</span>
+        <span class="d">Digital Making Studio</span>
+      </a>
+      <div class="tl-menu">
+        <a href="/work/">Work</a>
+        <a href="/services/">Services</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+      </div>
+      <a class="tl-nav-cta" href="/contact/">작업 의뢰</a>
+    </nav>
+  </div>
+
+  <div class="tl-hero">
+    <div class="tl-wrap">
+      <div class="tl-hero-in">
+        <p class="tl-eyebrow">웹사이트 · 웹서비스 · 업무 자동화</p>
+        <h1 class="tl-h1">아이디어를<br>쓸 수 있는 웹으로.</h1>
+        <p class="tl-lead">요구사항 정리부터 배포까지, 한 사람이 끝까지 만듭니다.</p>
+        <p class="tl-lead-2">AI를 포함한 도구로 빠르게 탐색하고 구현합니다. 무엇을 만들지 판단하고 결과를 확인해 고치는 일은 제가 합니다.</p>
+        <div class="tl-actions">
+          <a class="tl-btn tl-btn--solid" href="#work">제작 사례 보기 <span aria-hidden="true">→</span></a>
+          <a class="tl-btn tl-btn--ghost" href="#contact">작업 의뢰하기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- 01 · 무엇을 만드나 -->
+  <section class="tl-sec" aria-labelledby="s-makes">
+    <div class="tl-wrap">
+      <div class="tl-sec-head">
+        <span class="tl-sec-label">What we make</span>
+        <h2 class="tl-sec-title" id="s-makes">무엇을 만드나</h2>
+      </div>
+      <div class="tl-makes">
+        <div class="tl-make">
+          <span class="k">01</span>
+          <span class="t">소규모 웹사이트<br>랜딩페이지</span>
+          <span class="d">브랜드나 서비스를 소개하고 문의를 받는 페이지.</span>
+        </div>
+        <div class="tl-make">
+          <span class="k">02</span>
+          <span class="t">소규모 웹서비스<br>웹앱</span>
+          <span class="d">예약, 신청, 조회처럼 사람이 실제로 쓰는 기능.</span>
+        </div>
+        <div class="tl-make">
+          <span class="k">03</span>
+          <span class="t">기존 사이트<br>UI · 기능 개선</span>
+          <span class="d">이미 있는 사이트가 불편하거나 느릴 때.</span>
+        </div>
+        <div class="tl-make">
+          <span class="k">04</span>
+          <span class="t">간단한<br>업무 자동화</span>
+          <span class="d">매번 손으로 하던 반복 작업을 도구로.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 · 문제를 정리하는 방식 -->
+  <section class="tl-sec" aria-labelledby="s-how">
+    <div class="tl-wrap">
+      <div class="tl-sec-head">
+        <span class="tl-sec-label">How we work</span>
+        <h2 class="tl-sec-title" id="s-how">문제를 정리하는 방식</h2>
+        <p class="tl-sec-desc">무엇을 만들지 정하지 않은 채로 시작하면 결국 두 번 만듭니다. 여섯 단계 중 앞의 두 단계에 가장 많은 시간을 씁니다.</p>
+      </div>
+      <ol class="tl-steps" style="list-style:none;margin:0;padding:0">
+        <li class="tl-step"><span class="k">01</span><span class="t">문제 파악</span><span class="d">지금 무엇이 불편한지부터 듣습니다.</span></li>
+        <li class="tl-step"><span class="k">02</span><span class="t">요구사항 정리</span><span class="d">들은 것을 글로 정리해 확인받습니다.</span></li>
+        <li class="tl-step"><span class="k">03</span><span class="t">방향과 도구 결정</span><span class="d">문제에 맞는 도구를 고릅니다.</span></li>
+        <li class="tl-step"><span class="k">04</span><span class="t">구현</span><span class="d">AI를 활용해 빠르게 탐색하고 만듭니다.</span></li>
+        <li class="tl-step"><span class="k">05</span><span class="t">검수</span><span class="d">직접 써봅니다. 그대로 넘기지 않습니다.</span></li>
+        <li class="tl-step"><span class="k">06</span><span class="t">배포와 개선</span><span class="d">쓰기 시작한 뒤 나오는 문제를 고칩니다.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 03 · 제작 사례 -->
+  <section class="tl-gallery" id="work" aria-labelledby="s-work">
+    <div class="tl-wrap">
+      <div class="tl-sec-head">
+        <span class="tl-sec-label">Selected work</span>
+        <h2 class="tl-sec-title" id="s-work">제작 사례</h2>
+      </div>
+
+      <div class="tl-works">
+
+        <article class="tl-work">
+          <figure class="tl-work-fig">
+            <div class="tl-shot">
+              <!-- 실제 제작: 아래 두 줄을 <img src="…" alt="개인 학습 시스템 화면"> 로 교체 -->
+              <div class="tl-shot-ph tl-ph--1"></div>
+              <figcaption class="tl-shot-note">이미지 자리 · 실제 작업물 아님</figcaption>
+            </div>
+          </figure>
+          <div class="tl-work-cap">
+            <div>
+              <h3 class="tl-work-t">개인 학습 시스템</h3>
+              <p class="tl-work-p">필요한 자료가 어디 있는지 매번 찾아야 했습니다. 쓰면서 불편한 지점을 발견하고, 요구사항으로 정리하고, 만들고, 다시 써보며 고쳐 나가고 있습니다.</p>
+              <a class="tl-work-link" href="/work/">과정 자세히 보기 <span aria-hidden="true">→</span></a>
+            </div>
+            <dl class="tl-work-meta">
+              <div><dt>참여 형태</dt><dd>개인 프로젝트</dd></div>
+              <div><dt>역할</dt><dd>기획 · 설계 · 구현 · 검수 전 과정</dd></div>
+              <div><dt>상태</dt><dd>사용하며 개선 중</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="tl-work">
+          <figure class="tl-work-fig">
+            <div class="tl-shot">
+              <!-- 실제 제작: 아래 두 줄을 <img src="…" alt="Momentalk 화면"> 로 교체 -->
+              <div class="tl-shot-ph tl-ph--2"></div>
+              <figcaption class="tl-shot-note">이미지 자리 · 실제 작업물 아님</figcaption>
+            </div>
+          </figure>
+          <div class="tl-work-cap">
+            <div>
+              <h3 class="tl-work-t">Momentalk</h3>
+              <p class="tl-work-p">여러 명이 함께 만든 서비스입니다. 팀 전체의 결과물과 제가 실제로 담당한 영역을 나누어 적습니다. 남의 작업을 제 것처럼 쓰지 않습니다.</p>
+              <a class="tl-work-link" href="/work/">과정 자세히 보기 <span aria-hidden="true">→</span></a>
+            </div>
+            <dl class="tl-work-meta">
+              <div><dt>참여 형태</dt><dd>팀 프로젝트</dd></div>
+              <div><dt>담당</dt><dd>DB · 백엔드, 게임 로직, CI · 코드리뷰</dd></div>
+              <div><dt>시기</dt><dd>2026</dd></div>
+            </dl>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="tl-works-note">
+        <p>개수를 늘리기보다 과정을 남깁니다. 공개할 가치가 있는 작업이 생기면 같은 방식으로 추가합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 · 일하는 방식 -->
+  <section class="tl-sec" aria-labelledby="s-prin">
+    <div class="tl-wrap">
+      <div class="tl-sec-head">
+        <span class="tl-sec-label">Principles</span>
+        <h2 class="tl-sec-title" id="s-prin">일하는 방식</h2>
+      </div>
+      <div class="tl-prin">
+        <div class="tl-p">
+          <span class="q">요구사항을 글로 정리해서 시작합니다</span>
+          <span class="d">말로 오간 것은 서로 다르게 기억됩니다. 무엇을 만들지 문서로 확인받은 뒤에 손을 댑니다.</span>
+        </div>
+        <div class="tl-p">
+          <span class="q">AI가 만든 결과를 그대로 넘기지 않습니다</span>
+          <span class="d">AI는 빠르게 만들지만 무엇이 맞는지 판단하지 않습니다. 직접 써보고 고친 것만 전달합니다.</span>
+        </div>
+        <div class="tl-p">
+          <span class="q">쓰다가 막히는 문제는 그 자리에서 고칩니다</span>
+          <span class="d">지금 하려는 일을 막는 것은 즉시, 있으면 더 좋아지는 것은 따로 모아 계획해서.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 · 기록 -->
+  <section class="tl-sec" aria-labelledby="s-journal">
+    <div class="tl-wrap">
+      <div class="tl-sec-head">
+        <span class="tl-sec-label">Journal</span>
+        <h2 class="tl-sec-title" id="s-journal">기록</h2>
+      </div>
+      <div class="tl-journal">
+        <a class="tl-j" href="/blog/">
+          <span class="date">예시</span>
+          <span class="title">워드프레스 문의 메일이 도착하지 않을 때 확인할 것들</span>
+          <span class="cat">WordPress</span>
+        </a>
+        <a class="tl-j" href="/blog/">
+          <span class="date">예시</span>
+          <span class="title">AI가 만든 코드를 어디까지 믿고 어디부터 확인하는가</span>
+          <span class="cat">AI 활용 제작</span>
+        </a>
+        <a class="tl-j" href="/blog/">
+          <span class="date">예시</span>
+          <span class="title">쓰면서 발견한 문제를 즉시 고칠 것과 미룰 것으로 나누는 기준</span>
+          <span class="cat">제작 기록</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 · 문의 -->
+  <section class="tl-contact" id="contact" aria-labelledby="s-contact">
+    <div class="tl-wrap">
+      <div class="tl-contact-in">
+        <div class="tl-contact-grid">
+          <div>
+            <h2 class="tl-contact-h" id="s-contact">무엇을 만들고 싶으신지<br>먼저 들려주세요.</h2>
+            <p class="tl-contact-p">정리된 기획서가 없어도 괜찮습니다. 어떤 점이 불편한지, 무엇이 있었으면 좋겠는지만 적어주시면 나머지는 함께 정리합니다.</p>
+            <a class="tl-btn tl-btn--solid" href="/contact/">작업 의뢰하기 <span aria-hidden="true">→</span></a>
+            <ol class="tl-flow">
+              <li><span class="k">01</span><span>만들고 싶은 것을 적어 보내주세요.</span></li>
+              <li><span class="k">02</span><span>2영업일 안에 가능 여부와 대략적인 범위를 회신합니다.</span></li>
+              <li><span class="k">03</span><span>요구사항을 정리한 뒤 일정과 금액을 확정하고 시작합니다.</span></li>
+            </ol>
+          </div>
+          <div class="tl-terms">
+            <dl>
+              <div>
+                <dt>시작 가격</dt>
+                <dd>
+                  <span class="big">국내 200,000원부터<br>해외 USD 150부터</span>
+                  <span class="sm">고정 패키지 가격이 아닙니다. 페이지 수, 기능, 작업 범위, 난이도에 따라 달라지며 요구사항 확인 후 착수 전에 확정합니다.</span>
+                </dd>
+              </div>
+              <div>
+                <dt>작업 기간</dt>
+                <dd>
+                  <span class="big">소규모 작업 기준 약 5영업일</span>
+                  <span class="sm">구현 약 3일, 테스트와 검수·수정 약 2일을 기준으로 잡습니다. 실제 일정은 요구사항과 규모를 확인한 뒤 착수 전에 정합니다.</span>
+                </dd>
+              </div>
+              <div>
+                <dt>수정 범위</dt>
+                <dd><span class="sm" style="margin-top:0">처음 합의한 요구사항 안에서의 수정과, 새로운 기능·화면·콘텐츠가 추가되는 범위 확장은 구분해서 진행합니다.</span></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="tl-foot">
+  <div class="tl-wrap">
+    <div class="tl-foot-in">
+      <span class="b">Tenlune</span>
+      <div class="links">
+        <a href="/work/">Work</a>
+        <a href="/services/">Services</a>
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">개인정보처리방침</a>
+      </div>
+      <span class="dom">tenlune.com</span>
+    </div>
+  </div>
+</footer>

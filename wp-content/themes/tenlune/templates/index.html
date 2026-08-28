@@ -1,0 +1,54 @@
+<!-- wp:template-part {"slug":"header","tagName":"div"} /-->
+
+<!-- wp:group {"tagName":"main","metadata":{"name":"본문"},"anchor":"main","layout":{"type":"constrained"}} -->
+<main id="main" class="wp-block-group">
+
+	<!-- wp:group {"className":"tl-pagehead","layout":{"type":"constrained"}} -->
+	<div class="wp-block-group tl-pagehead">
+		<!-- wp:paragraph {"className":"tl-eyebrow"} -->
+		<p class="tl-eyebrow">Journal</p>
+		<!-- /wp:paragraph -->
+
+		<!-- wp:heading {"level":1,"className":"tl-h2-lg"} -->
+		<h1 class="wp-block-heading tl-h2-lg">기록</h1>
+		<!-- /wp:heading -->
+
+		<!-- wp:paragraph {"className":"tl-lead"} -->
+		<p class="tl-lead">직접 이해하고 구현하고 확인한 것만 씁니다. 문제 상황을 먼저 평이하게 적고, 본문에서는 용어를 정확하게 씁니다.</p>
+		<!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:group {"tagName":"section","className":"tl-sec","layout":{"type":"constrained"}} -->
+	<section class="wp-block-group tl-sec">
+		<!-- wp:query {"queryId":50,"query":{"perPage":10,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":true},"className":"tl-journal-query"} -->
+		<div class="wp-block-query tl-journal-query">
+			<!-- wp:post-template {"className":"tl-journal"} -->
+				<!-- wp:group {"className":"tl-j","layout":{"type":"default"}} -->
+				<div class="wp-block-group tl-j">
+					<!-- wp:post-date {"format":"Y-m-d","className":"date"} /-->
+					<!-- wp:post-title {"level":2,"isLink":true,"className":"title"} /-->
+					<!-- wp:post-terms {"term":"category","className":"cat"} /-->
+				</div>
+				<!-- /wp:group -->
+			<!-- /wp:post-template -->
+
+			<!-- wp:query-pagination {"className":"tl-pagination","layout":{"type":"flex","justifyContent":"space-between"}} -->
+				<!-- wp:query-pagination-previous {"label":"← 이전"} /-->
+				<!-- wp:query-pagination-numbers /-->
+				<!-- wp:query-pagination-next {"label":"다음 →"} /-->
+			<!-- /wp:query-pagination -->
+
+			<!-- wp:query-no-results -->
+				<!-- wp:paragraph {"className":"tl-sec-desc"} -->
+				<p class="tl-sec-desc">아직 쓴 글이 없습니다.</p>
+				<!-- /wp:paragraph -->
+			<!-- /wp:query-no-results -->
+		</div>
+		<!-- /wp:query -->
+	</section>
+	<!-- /wp:group -->
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div"} /-->
