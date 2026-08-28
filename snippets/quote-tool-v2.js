@@ -322,12 +322,13 @@
       pack.service.label + ' (' + pack.service.hint + ')',
       pack.priced.length ? '필요 기능: ' + pack.priced.map(function (f) { return f.hint; }).join(', ') : '추가 기능 없음',
       pack.consultFeats.length ? '상담 필요 항목: ' + pack.consultFeats.map(function (f) { return f.hint; }).join(', ') : '',
+      pack.bundle ? '최적화 요약: ' + pack.bundle.label + ' — 중복 구현 감소 약 -' + fmt(pack.bundle.saveMin) + ' ~ -' + fmt(pack.bundle.saveMax) : '',
       '예상 견적: ' + fmt(pack.low) + ' ~ ' + fmt(pack.high) + ' (참고용, 정확한 견적은 상담 후 확정)',
       '예상 기간: 약 ' + pack.days + '영업일 내외',
       '예산: ' + budget.label
     ].filter(function (s) { return s; }).join('\n');
 
-    var contactUrl = '/contact/?prefill=' + encodeURIComponent('[AI 견적 최적화에서 넘어옴]\n' + summaryText + '\n\n추가로 전달하고 싶은 내용:\n');
+    var contactUrl = '/contact/?prefill=' + encodeURIComponent('[AI 견적 최적화에서 넘어옴]\n' + summaryText);
     var cta = el('a', { href: contactUrl, class: 'wp-block-button__link wp-element-button', text: '이 구성으로 문의하기 →' });
     resultBox.appendChild(el('div', { class: 'wp-block-button tl-quote-cta' }, [cta]));
 

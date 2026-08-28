@@ -1,0 +1,32 @@
+.tl-quote-form{display:flex;flex-direction:column;gap:1.75em;margin-bottom:1em}
+.tl-quote-label{font-weight:600;margin-bottom:.6em}
+.tl-quote-options-col{display:flex;flex-direction:column;gap:.6em}
+.tl-quote-opt-block{display:flex;flex-direction:column;align-items:flex-start;gap:.2em;border:1px solid currentColor;border-radius:.9em;padding:.7em 1em;cursor:pointer;opacity:.85}
+.tl-quote-opt-block:has(input:checked){opacity:1;font-weight:600;border-width:2px}
+.tl-quote-opt-block input{margin:0 0 .3em 0}
+.tl-quote-opt-label{font-weight:600}
+.tl-quote-opt-sub{font-weight:400;font-size:.88em;opacity:.8}
+.tl-quote-submit{align-self:flex-start;border:2px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:.7em 1.6em;font-size:1em;cursor:pointer;font-weight:600;margin-bottom:1em}
+.tl-quote-submit:hover{opacity:.8}
+.tl-quote-promo{font-size:.85em;opacity:.75;margin:0 0 1.5em}
+.tl-quote-result{border-top:1px solid currentColor;padding-top:1.5em;margin-top:.5em}
+.tl-quote-result-title{font-weight:700;font-size:1.1em;margin-bottom:.5em}
+.tl-quote-summary{list-style:none;margin:0 0 1.5em;padding:0;display:flex;flex-direction:column;gap:.4em}
+.tl-quote-summary li{padding-left:1.2em;position:relative}
+.tl-quote-summary li:before{content:"—";position:absolute;left:0;opacity:.6}
+.tl-quote-bundle{border:1px dashed currentColor;border-radius:.9em;padding:1em 1.2em;margin-bottom:1.5em;opacity:.95}
+.tl-quote-bundle-save{font-weight:600;margin-top:.4em}
+.tl-quote-notes-title{font-weight:600;margin-bottom:.3em}
+.tl-quote-final{margin-bottom:1.5em}
+.tl-quote-final-price{font-size:1.5em;font-weight:700;margin:.2em 0}
+.tl-quote-final-days{opacity:.85;margin:0 0 .5em}
+.tl-quote-disclaimer{font-size:.85em;opacity:.7}
+.tl-quote-notes{opacity:.9;font-size:.95em;margin-bottom:1.5em}
+.tl-quote-budget-alt{border-left:3px solid currentColor;padding-left:1em;margin-bottom:1.5em}
+.tl-quote-phase-title{font-weight:600;margin:.6em 0 .3em}
+.tl-quote-ai{border-left:3px solid currentColor;padding:.2em 0 .2em 1em;margin-bottom:1.5em;opacity:.9}
+.tl-quote-ai-title{font-weight:600;font-size:.85em;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3em}
+.tl-quote-ai-text{white-space:pre-line}
+@media (max-width:600px){
+  .tl-quote-submit{width:100%;text-align:center}
+}
