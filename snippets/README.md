@@ -29,16 +29,16 @@ wp-admin(또는 `wp db query`로 `wp_posts.post_content`)의 실제 내용과 �
 
 ## 동기화 기록
 
-- **2026-08-28** — 라이브 WPCode 스니펫에서 로컬로 단방향 동기화 (라이브 = SoT, 라이브 무수정).
+- **2026-08-28** — 라이브 WPCode 스니펫에서 로컬로 단방향 동기화 (라이브 무수정).
   - 소스: 라이브 `wp_posts.post_content` (WPVibe `wp db query` 읽기 전용). 줄바꿈 LF,
     파일 끝 개행 없음 — 라이브 원문 그대로. 코드 개선·리팩터링 없음.
   - 동기화 후 로컬 파일 MD5가 라이브 `MD5(post_content)`와 일치함을 확인:
 
-    | 파일 | snippet id | 라이브 `post_modified` | bytes | MD5 (라이브 = 로컬) |
-    |---|---|---|---|---|
-    | `quote-tool-v2.js` | 21 | 2026-08-26 14:15:53 | 17,623 | `f4514e8128904438f5f3210bfad3b658` |
-    | `quote-tool-style.css` | 22 | 2026-08-26 13:41:36 | 2,307 | `8374fc06a990aa42cac329d8f6427978` |
-    | `contact-prefill.js` | 29 | 2026-08-26 14:11:29 | 514 | `9e2d948909c2bac10bc76972630d3bb0` |
+    | 파일 | 라이브 `post_modified` | bytes | MD5 (라이브 = 로컬) |
+    |---|---|---|---|
+    | `quote-tool-v2.js` | 2026-08-26 14:15:53 | 17,623 | `f4514e8128904438f5f3210bfad3b658` |
+    | `quote-tool-style.css` | 2026-08-26 13:41:36 | 2,307 | `8374fc06a990aa42cac329d8f6427978` |
+    | `contact-prefill.js` | 2026-08-26 14:11:29 | 514 | `9e2d948909c2bac10bc76972630d3bb0` |
 
   - `quote-tool-v2.js` 변경 내용(이전 로컬 사본 대비): `summaryText`에 번들 "최적화 요약"
     줄 추가, 문의 CTA `contactUrl`에서 `"\n\n추가로 전달하고 싶은 내용:\n"` 접미사 제거
