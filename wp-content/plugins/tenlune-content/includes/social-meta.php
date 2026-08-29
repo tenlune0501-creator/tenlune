@@ -6,11 +6,16 @@
  * 뜨도록 전 페이지 <head> 에 OG/Twitter 태그를 출력합니다. 콘텐츠를 서술하는
  * 메타이므로 테마가 아니라 이 플러그인에 둡니다. — C3
  *
+ * 같은 $desc·$url 로 표준 <meta name="description"> 과, 코어가 채우지 않는
+ * 홈·아카이브의 <link rel="canonical"> 도 함께 출력합니다. — M2 / M3
+ *
  * 값 결정
  *  - title       : wp_get_document_title()  (<title> 과 동일, 별도 관리 지점 없음)
  *  - description : 단일=발췌, 홈/검색=태그라인, 그 외=문맥별 기본 문구
+ *                  (og:description · twitter:description · meta[name=description] 공용)
  *  - image       : 대표이미지 → 옵션 tenlune_og_default_image → site_icon
  *  - url         : 문맥별 정규 URL (전부 https 로 강제; 도메인 하드코딩 없음)
+ *                  singular 은 코어 rel_canonical(), 그 외는 이 파일이 canonical 출력
  *  - type        : 사례/글=article, 그 외=website
  *
  * 모든 값은 tenlune/og_* 필터로 재정의 가능.
@@ -217,6 +222,19 @@ function tenlune_social_meta_render() {
 	}
 
 	echo "\n<!-- Tenlune social meta -->\n";
+
+	// M2 — 표준 <meta name="description">. og:description 과 같은 $desc 를 재사용한다.
+	// WordPress 코어·테마가 이 태그를 출력하지 않으므로 중복이 생기지 않는다.
+	if ( '' !== (string) $desc ) {
+		printf( "<meta name=\"description\" content=\"%s\" />\n", esc_attr( $desc ) );
+	}
+
+	// M3 — canonical. 코어 rel_canonical() 은 is_singular() 만 처리하므로,
+	// 홈 · Work 아카이브 · case_type 아카이브에만 여기서 출력해 중복을 피한다.
+	if ( is_front_page() || is_home() || is_post_type_archive( 'case' ) || is_tax( 'case_type' ) ) {
+		printf( "<link rel=\"canonical\" href=\"%s\" />\n", esc_url( $url ) );
+	}
+
 	foreach ( $tags as $t ) {
 		list( $attr, $key, $val ) = $t;
 		if ( '' === (string) $val ) {
