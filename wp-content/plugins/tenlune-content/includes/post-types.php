@@ -78,6 +78,18 @@ function tenlune_register_case_taxonomy() {
 			),
 		)
 	);
+
+	/**
+	 * `case` CPT(슬러그 work)가 만드는 첨부 규칙 `work/[^/]+/([^/]+)/?$` 가
+	 * `work/type/([^/]+)/?$` 보다 먼저 매칭되어 `/work/type/{slug}/` 가
+	 * attachment 조회로 빠지며 404 가 되는 것을 막습니다. 동일 규칙을 'top' 으로
+	 * 올려 택소노미 아카이브가 먼저 잡히게 합니다. — C2
+	 */
+	add_rewrite_rule(
+		'work/type/([^/]+)/?$',
+		'index.php?case_type=$matches[1]',
+		'top'
+	);
 }
 add_action( 'init', 'tenlune_register_case_taxonomy' );
 
