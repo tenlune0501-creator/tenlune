@@ -6,6 +6,11 @@
  * Description: 최신 글 3건을 행으로. 카드가 아니라 행인 이유는 Home 이 블로그 목록처럼 보이면 안 되기 때문입니다.
  * Keywords: blog, 기록, 최근 글
  *
+ * 2026-08-29 — 발행 글이 0건이라 빈 "아직 쓴 글이 없습니다" 가 홈에 노출되어(M6),
+ * `templates/front-page.html` 에서 이 패턴 참조 줄을 뺐습니다. 첫 실제 글을 발행하면
+ * front-page.html 의 principles 와 contact 패턴 사이에 아래 한 줄을 되살리면 됩니다:
+ *   <!-- wp:pattern {"slug":"tenlune/journal-row"} /-->
+ *
  * @package Tenlune
  */
 

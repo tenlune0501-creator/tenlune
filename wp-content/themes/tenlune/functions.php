@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'TENLUNE_VERSION' ) ) {
-	define( 'TENLUNE_VERSION', '0.1.1' );
+	define( 'TENLUNE_VERSION', '0.1.2' );
 }
 
 /**
@@ -121,3 +121,25 @@ function tenlune_excerpt_more() {
 	return '…';
 }
 add_filter( 'excerpt_more', 'tenlune_excerpt_more' );
+
+/**
+ * <meta name="generator" content="WordPress x.y"> 를 <head> 에서 뺍니다. — M7
+ * 버전 문자열은 정상이지만(현재 7.1) 굳이 노출할 이유가 없습니다. RSS 피드 쪽
+ * generator 는 건드리지 않습니다(the_generator 필터는 별개).
+ */
+remove_action( 'wp_head', 'wp_generator' );
+
+/**
+ * Contact Form 7 스크립트를 문의 페이지에서만 로드합니다. — M9
+ *
+ * CF7 은 기본적으로 전 페이지에 자기 JS(swv/index.js 등)를 큐잉합니다. 이 사이트에서
+ * CF7 폼은 `/contact/`(page slug `contact`) 한 곳뿐이라, 그 외 페이지에서는 내려서
+ * 불필요한 전송을 없앱니다. `/contact/` 에서는 원래대로(AJAX 검증·응답) 동작합니다.
+ * 다른 페이지에 `[contact-form-7]` 를 새로 넣으면 이 조건도 같이 넓혀야 합니다.
+ */
+add_filter(
+	'wpcf7_load_js',
+	static function ( $load ) {
+		return is_page( 'contact' ) ? $load : false;
+	}
+);
