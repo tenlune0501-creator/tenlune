@@ -7,8 +7,9 @@ WPCode 스니펫 사본(`snippets/`)·디자인 기준 자료(`design/`)를 추�
 WordPress 사이트가 여전히 Source of Truth**이고, 이 저장소는 그 사본입니다(원격 없음,
 자동 배포 없음). 콘텐츠(페이지/글/CPT)와 옵션은 저장소가 아니라 사이트에만 있습니다.
 
-마지막 갱신일: 2026-08-29 (도메인 301 마이그레이션 완료 / WPVibe→tenlune.com 이전 /
-C2·C3·M1·M2·M3 라이브 반영 / tenlune-content 0.1.3 / 문서 최종 정리)
+마지막 갱신일: 2026-08-29 (도메인 301 마이그레이션 / WPVibe→tenlune.com 이전 /
+C2·C3·M1·M2·M3 라이브 반영 / tenlune-content 0.1.3 / 테마 0.1.2 M6·M7·M9 /
+M5 첫-글 후속·M8 비-결함·M10 유지)
 
 ---
 
@@ -31,8 +32,9 @@ C2·C3·M1·M2·M3 라이브 반영 / tenlune-content 0.1.3 / 문서 최종 정�
   웹FTP/파일관리자로만 읽기·수정 가능. `DISALLOW_FILE_MODS` 미설정 → 플러그인 ZIP
   업로드 교체는 가능. 서버 실행 코드는 WPCode 스니펫(브라우저 승인 → 꺼짐 저장 →
   사용자가 wp-admin 에서 활성화; Claude 활성화 불가).
-- 테마: `tenlune` (커스텀 제작, FSE 블록 테마, `wpvibe_authored: false`). 버전 `0.1.1`.
-  반응형 CSS 이미 촘촘 (아래 "확인된 기존 자산" 참고).
+- 테마: `tenlune` (커스텀 제작, FSE 블록 테마, TT5 자식, `wpvibe_authored: false`).
+  버전 **`0.1.2`** (M6/M7/M9 반영, 라이브·저장소 일치). 반응형 CSS 이미 촘촘
+  (아래 "확인된 기존 자산" 참고). 사이트 편집기 오버라이드 0건 → 테마 파일이 정본.
 - 커스텀 플러그인: `tenlune-content` — **버전 `0.1.3`** (라이브·저장소 일치). CPT `case`,
   택소노미 `case_type`, 케이스 필드/블록, `case_type` 아카이브 rewrite(C2),
   OG/Twitter + `<meta name="description">` + 비-singular canonical(C3/M2/M3).
@@ -366,9 +368,9 @@ PHP 직렬화 배열(`a:N:{s:len:"key";...}`)을 직접 SQL로 쓸 때는, Node.
 
 ### 🟡 향후 정리 항목 — 테마 CSS 캐시 무효화
 
-- `tenlune.css` 가 `?ver=0.1.1` (테마 버전 고정) 로 제공되어 브라우저가 사실상
-  영구 캐시함. 테마 CSS 를 실제로 수정할 일이 생기면 `wp-content/themes/tenlune/
-  style.css` 의 `Version:` 헤더를 올려 쿼리스트링을 바꿔야 재방문자에게 반영됨.
+- `tenlune.css`/`style.css` 는 테마 버전을 `?ver=` 로 달고 제공됨(현재 `?ver=0.1.2`).
+  테마 자산을 수정할 때마다 `style.css` `Version:` + `functions.php` `TENLUNE_VERSION`
+  을 함께 올려야 재방문자 브라우저 캐시가 무효화됨. (2026-08-29 `0.1.1 → 0.1.2` 올림)
 
 ---
 
@@ -469,6 +471,43 @@ curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall
   canonical 중복 0. PHP 에러 0. OG/Twitter 세트(og:*=10, twitter:*=4)·social-meta
   블록 마커 2(=1블록) 유지.
 
+### M5~M9 (audit Medium/Low) — 2026-08-29 처리
+
+사이트 편집기 오버라이드(`wp_template`/`wp_template_part`/`wp_global_styles`) **0건** 확인
+→ 라이브 FSE 템플릿은 전부 테마 파일이 정본. `dist/tenlune-theme.zip`(커밋본) = 당시
+테마 파일과 바이트 일치 확인 후 진행.
+
+- **M6·M7·M9 → 테마 `tenlune` `0.1.1 → 0.1.2` 한 번 배포로 처리** (커밋 `ebe5e8f`,
+  `62b4e5c`; 사용자 wp-admin 테마 업로드 교체 → `wp theme get` = `0.1.2 active`):
+  - **M6 (홈 빈 Journal 섹션)**: `templates/front-page.html` 에서
+    `<!-- wp:pattern {"slug":"tenlune/journal-row"} /-->` 1줄 제거. 발행 글 0건이라
+    홈에 "Journal / 기록 / 아직 쓴 글이 없습니다" 가 뜨던 것을 없앰. 홈 섹션 순서는
+    hero·makes·process·work·principles·contact 로 유지. `patterns/journal-row.php`
+    docblock 에 되살리는 법 명시(첫 글 발행 시 M5 절차).
+  - **M7 (generator 메타)**: `functions.php` 에 `remove_action( 'wp_head', 'wp_generator' )`.
+    전 페이지에서 `<meta name="generator">` 사라짐. RSS `the_generator` 미변경.
+  - **M9 (CF7 스크립트 전역 로드)**: `functions.php` 에 `wpcf7_load_js` 필터를
+    `is_page('contact')` 로 게이트. `/contact/` 에서만 CF7 JS 로드(폼 정상), 나머지
+    페이지에서 제거. **견적 prefill JS(스니펫 29) 미변경** — 이미 자체 가드
+    (`pathname.indexOf('/contact')`)로 다른 페이지에선 즉시 return 하는 인라인 <1KB.
+    스니펫 22(견적 CSS)는 범위 밖.
+  - 라이브 검증: 10개 페이지(홈·work·work/type·services·contact·about·privacy·blog·case·404)
+    정상. generator 0(전부), CF7 JS `/contact/` 에만, 홈 Journal 섹션 없음. PHP 에러 0,
+    M2/M3·OG/Twitter·옛 도메인 301·WPVibe·robots·sitemap 404 전부 유지.
+  - 롤백: 이전 `dist/tenlune-theme.zip` 재업로드. DB·옵션·콘텐츠 변경 없음.
+- **M5 (블로그 구조)** — **지금 변경하지 않음.** `show_on_front=posts` + 발행 글 0건이라
+  실제 post 목록 URL 이 없고 `/blog/` 는 Page 16 정적 페이지. `show_on_front=page` 로
+  바꾸려면 존재하지 않는 `page_on_front` 페이지가 필요하고, `/blog/` 출력이 Page 16
+  콘텐츠 → 빈 `home.html` 로 회귀함. 현재 무결(모든 페이지 200, 네비 정상). **첫 실제
+  블로그 글을 발행할 때** 구조 결정 + `front-page.html` 의 journal-row 복원 + 스니펫 39
+  비활성(사이트맵 복구)을 한 세트로 처리한다 (TODO "🔁 출시 후 후속" 에 절차).
+- **M8 (모바일 히어로 여백)** — **결함 아님.** `.tl-hero-in` 모바일
+  `padding-top: var(--tl-s-6)`(5.5rem)·`.tl-pagehead` `var(--tl-s-5)`(4rem)은 theme.json
+  spacing 토큰 기반 확정 디자인, audit 도 "사용성 지장 없음". 변경 안 함. 선택적으로
+  좁히려면 `assets/css/tenlune.css` 모바일 `.tl-hero-in` padding-top 1줄
+  (`var(--tl-s-6)`→`var(--tl-s-5)`, 88→64px) — 확정 디자인 변경이라 승인 필요.
+- **M10 (실제 고객 사례)** — 콘텐츠/영업 진행에 따라. 이번 범위 밖, TODO 유지.
+
 ### 미디어 / 옵션 / 스니펫 요약 (현재)
 
 | 항목 | 값 |
@@ -478,9 +517,10 @@ curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall
 | case 대표 이미지 | 18 ← attachment 32, 19 ← attachment 33 (`design/case-images/`) |
 | WPCode 스니펫 | 21 견적 JS · 22 견적 CSS · 29 폼 자동채움 · **39 사이트맵 임시 비활성(M1)** |
 | 수동 `post_excerpt` | 페이지 14·13·15·3 |
-| `blog_public` | `1` (색인 허용) / 발행 글 0개 / `show_on_front=posts` / `page_for_posts=16` |
+| `blog_public` | `1` (색인 허용) / 발행 글 0개 / `show_on_front=posts` / `page_for_posts=16`(미사용) |
 | `tenlune-content` 플러그인 | **0.1.3** (라이브·저장소 일치) |
-| 테마 `tenlune` | `0.1.1` (미변경) |
+| 테마 `tenlune` | **0.1.2** (라이브·저장소 일치) — M6/M7/M9 반영 |
+| FSE 템플릿 오버라이드 | `wp_template`/`wp_template_part`/`wp_global_styles` **0건** (테마 파일이 정본) |
 
 ### 배포 / 유지보수 절차 (갱신)
 
@@ -489,6 +529,12 @@ curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall
   PowerShell `Compress-Archive` 는 `\` 로 만들어 Cafe24 설치 시 깨짐) → **사용자가
   wp-admin → 플러그인 → 새로 추가 → 플러그인 업로드 → "현재 설치된 것을 업로드로 교체"**
   → 활성 유지 확인 → curl 검증. git 원격·자동 배포 없음.
+- **테마 `tenlune` 변경도 같은 방식** = 로컬 편집 → 버전 올림(`style.css` `Version:` +
+  `functions.php` `TENLUNE_VERSION` 일치) → `dist/tenlune-theme.zip` Python `zipfile`
+  재빌드(루트 `tenlune/`, forward slash) → **사용자가 wp-admin → 외모 → 테마 → 새 테마
+  추가 → 테마 업로드 → "현재 활성 테마를 업로드한 것으로 교체"** → `wp theme get` 으로
+  버전·활성 확인 → `wp cache purge` → curl 검증. FSE 템플릿 오버라이드 0건이라 테마
+  파일이 즉시 반영됨.
 - 서버 파일(`.htaccess` 등): `DISALLOW_FILE_EDIT` 로 WPVibe 도 못 읽음 → 사용자가
   Cafe24 웹FTP/파일관리자로만. 수정 전 타임스탬프 백업 필수(같은 docroot 를
   `tenlune.com` 도 공유 → 문법 오류 시 동시 500).

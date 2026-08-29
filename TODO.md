@@ -1,6 +1,6 @@
 # TODO — Tenlune 출시 준비
 
-마지막 갱신: 2026-08-29 (C2/C3 커밋 + 도메인 301(M4) + sitemap 404 정상화(M1) + meta description·canonical(M2/M3)·페이지 발췌 완료)
+마지막 갱신: 2026-08-29 (C2/C3 커밋 · 도메인 301(M4) · sitemap(M1) · meta description·canonical(M2/M3)·발췌 · 테마 0.1.2 M6/M7/M9 완료 / M5·M8·M10만 후속으로 남음)
 
 목표: 고객에게 `https://tenlune.com` 링크를 보내고 작업 문의를 받을 수 있는 상태.
 
@@ -28,7 +28,7 @@
 
 ---
 
-## ✅ 2026-08-29 완료 — C2/C3 커밋 · 도메인 301(M4) · sitemap(M1) · M2/M3 · 페이지 발췌
+## ✅ 2026-08-29 완료 — C2/C3 커밋 · 도메인 301(M4) · sitemap(M1) · M2/M3 · 발췌 · 테마 0.1.2(M6/M7/M9)
 
 ### C2 / C3 로컬 변경 커밋 (구 "내일 이어서 1")
 - `tenlune-content` 플러그인 버전 `0.1.1 → 0.1.2` (헤더 `Version:` + `TENLUNE_CONTENT_VERSION` 일치).
@@ -66,6 +66,35 @@
   - 커밋 2개: `2d11d4f` feat(content): emit meta description and canonical for non-singular views / `83bb5bf` chore(release): rebuild plugin package at 0.1.3.
 - **라이브 검증**: 9개 페이지(홈·work·work/type·services·contact·about·privacy·case·blog) 전부 200 + `meta[name=description]` 1개 + `canonical` 1개 + `og:description` 1개. 홈 canonical `https://tenlune.com/`, `/work/` `…/work/`, `/work/type/웹사이트/` term 링크. singular canonical 중복 0 (코어 1개 유지). PHP 에러 0, OG/Twitter 세트(og:*=10, twitter:*=4) 유지, social-meta 블록 마커 2(=1블록), 옛 도메인 301·WPVibe·robots(Sitemap 줄 0)·`/wp-sitemap.xml` 404 전부 유지.
 
+### M6 / M7 / M9 — 테마 `tenlune` 0.1.2 (출시 후 개선, 라이브 반영)
+
+audit Medium/Low 중 안전하게 처리 가능한 3건을 테마 한 번 배포로 마무리. 나머지
+(M5·M8·M10)는 아래 "후순위" 참조.
+
+- **M6 — 홈의 빈 Journal 섹션**: `templates/front-page.html` 에서
+  `<!-- wp:pattern {"slug":"tenlune/journal-row"} /-->` 1줄 제거 → 발행 글 0건 상태에서
+  홈에 "Journal / 기록 / 아직 쓴 글이 없습니다" 가 더 이상 안 뜸. `patterns/journal-row.php`
+  docblock 에 "첫 글 발행 시 이 줄 되살리기" 명시. (M5 후속과 한 세트)
+- **M7 — generator 메타**: `functions.php` 에 `remove_action( 'wp_head', 'wp_generator' )`.
+  전 페이지에서 `<meta name="generator">` 사라짐. RSS `the_generator` 는 미변경.
+- **M9 — CF7 스크립트 전역 로드**: `functions.php` 에 `wpcf7_load_js` 필터를
+  `is_page('contact')` 로 게이트. `/contact/` 에서만 CF7 JS 로드(폼 정상 동작),
+  나머지 페이지에서 제거. **견적 prefill JS(스니펫 29)는 미변경** — 이미 자체 가드
+  (`pathname` 검사)로 `/contact/` 외에서는 즉시 return 하는 인라인 <1KB 라 손댈 실익 없음.
+  스니펫 22(견적 CSS)는 CSS 라 범위 밖.
+- 테마 버전 `0.1.1 → 0.1.2` (`style.css` + `TENLUNE_VERSION`), `dist/tenlune-theme.zip`
+  재빌드(36파일, forward slash, CRC OK, 작업트리 일치). 사용자 wp-admin 테마 업로드
+  교체 → `wp theme get` = `Tenlune 0.1.2 active` 확인.
+- 커밋 2개: `ebe5e8f` feat(theme): hide empty journal, drop generator meta, scope CF7 JS
+  / `62b4e5c` chore(release): rebuild theme package at 0.1.2.
+- **라이브 검증**: 10개 페이지(홈·work·work/type·services·contact·about·privacy·blog·case·404)
+  전부 정상 코드. `generator` 0(전부) / CF7 JS 는 `/contact/` 에만 / 홈 섹션 순서
+  hero·makes·process·work·principles·contact (Journal 빠짐). PHP 에러 0, M2 meta-desc
+  1/페이지·M3 canonical(404 제외) 유지, OG/Twitter 세트 유지, 옛 도메인 301·WPVibe·
+  robots(Sitemap 0)·`/wp-sitemap.xml` 404 유지.
+- **롤백**: 이전 `dist/tenlune-theme.zip`(`git show HEAD~2:dist/tenlune-theme.zip`) 재업로드
+  또는 `git checkout` 후 재빌드. DB·옵션·콘텐츠 변경 없음.
+
 ---
 
 ## 🔜 남은 작업
@@ -85,23 +114,46 @@ C1–C4 (2026-08-28) + 아래 (2026-08-29) 로 "고객에게 `https://tenlune.co
 
 ### 🔁 출시 후 후속 (예정된 작업, 잊지 말 것)
 
-- [ ] **블로그 첫 실제 글 발행 시 코어 사이트맵 재활성화**: WPCode 스니펫 **id 39**
-  비활성화 → `wp rewrite flush` → `wp cache purge` → `/wp-sitemap.xml` 200 + `robots.txt`
-  `Sitemap:` 줄 복귀 확인. (M5·M6 정리와 함께)
+- [ ] **M5 + 블로그 첫 실제 글 발행 = 한 세트로 처리**:
+  1. `show_on_front` 구조 결정 — 권장: `show_on_front=page` + `page_for_posts=16`
+     활용 + `page_on_front` 용 홈 페이지 필요(현재 없음 → FSE `front-page.html` 이
+     `/` 를 계속 렌더하므로 빈 페이지 하나 만들어 지정하거나, `show_on_front=posts`
+     유지 + `/blog/` 를 글 목록으로 바꾸는 방안 중 택1). **콘텐츠 없이 미리 바꾸면
+     `/blog/`(Page 16) 출력이 빈 `home.html` 로 회귀하므로 지금은 손대지 않음.**
+  2. `templates/front-page.html` 에 `<!-- wp:pattern {"slug":"tenlune/journal-row"} /-->`
+     한 줄 되살리기 (M6 에서 뺀 것) → 테마 재배포.
+  3. WPCode 스니펫 **id 39 비활성화**
+     (`https://tenlune.com/wp-admin/admin.php?page=wpcode-snippet-manager&snippet_id=39`)
+     → `wp rewrite flush` → `wp cache purge`.
+  4. 검증: `/wp-sitemap.xml` 200 + 유효 XML, `robots.txt` 에 `Sitemap:` 줄 복귀,
+     홈 Journal 섹션에 실제 글 노출, 사례 상세 "이 사례와 이어지는 글" 채워짐.
 
 ---
 
-## 🗂 후순위 — 출시 후 개선 (기존 audit Medium / Low, 삭제하지 않음)
+## 🗂 후순위 — 출시 후 개선 (기존 audit, 삭제하지 않음)
 
 ### Medium
-- [ ] **M5 — 블로그 구조 반쪽** : `show_on_front=posts` 라 `/` 가 글 목록. `/blog/` 는 손으로 쓴 별도 정적 페이지. 사례 상세엔 "RELATED JOURNAL: 아직 이어지는 글이 없습니다". 첫 글 쓰기 전에 구조 정리 (`page_for_posts=16` 활용 여부 결정).
-- [ ] **M6 — 홈 메인의 빈 "Journal / 기록" 섹션** ("아직 쓴 글이 없습니다" 노출) → 첫 글 전까지 숨기는 방안.
+- [ ] **M5 — 블로그 구조** : `show_on_front=posts` + 발행 글 0건이라 실제 post 목록
+  URL 이 없음(`/blog/` 는 Page 16 정적). `page_for_posts=16` 은 설정만 돼 있고 미사용.
+  → **첫 실제 글 발행 시 위 "🔁 출시 후 후속" 절차로 처리.** 지금은 무결(모든 페이지
+  200, 네비 정상), 콘텐츠 전 구조 변경은 하지 않음.
+- [x] ~~**M6 — 홈 메인의 빈 "Journal / 기록" 섹션**~~ **(2026-08-29 완료, 테마 0.1.2)** —
+  `front-page.html` 에서 패턴 참조 제거. 첫 글 발행 시 M5 절차 2번으로 되살림.
 
 ### Low
-- [ ] **M7 — `<meta name="generator">` 노출** (`content="WordPress 7.1"`). `wp core version` = 7.1 로 값 자체는 정상 확인됨. 정보 노출 최소화 원하면 `remove_action('wp_head','wp_generator')` 정도.
-- [ ] **M8 — 모바일 히어로 상단 빈 공간 과다** (홈·서비스·문의, 390px 기준 헤더~첫 콘텐츠 ~250–350px). 사용성 지장 없음, 균형만.
-- [ ] **M9 — 미사용 스크립트 로드** : CF7 JS + 견적 prefill JS 가 폼 없는 페이지(홈·소개·블로그·404·개인정보)에도 로드.
-- [ ] **M10 — 포트폴리오 사례 2건, 둘 다 자체 제작** ("고객 의뢰 아님" 명시). 실제 고객 사례 확보 시 추가.
+- [x] ~~**M7 — `<meta name="generator">` 노출**~~ **(2026-08-29 완료, 테마 0.1.2)** —
+  `remove_action('wp_head','wp_generator')`. (값 7.1 자체는 정상 버전이었음)
+- [ ] **M8 — 모바일 히어로 상단 여백** — **결함 아님.** `.tl-hero-in` 모바일
+  `padding-top: var(--tl-s-6)`(5.5rem)·`.tl-pagehead` `var(--tl-s-5)`(4rem)은 theme.json
+  spacing 토큰 기반 확정 디자인. audit 도 "사용성 지장 없음, 균형만". **변경 안 함.**
+  선택적 개선을 원하면: `assets/css/tenlune.css` 의 모바일 `.tl-hero-in` padding-top 을
+  `var(--tl-s-6)`→`var(--tl-s-5)`(88→64px) 1줄 — 확정 디자인 변경이라 사용자 승인 +
+  테마 재배포 필요.
+- [x] ~~**M9 — 미사용 스크립트 로드**~~ **(2026-08-29 부분 완료, 테마 0.1.2)** —
+  CF7 JS 를 `is_page('contact')` 로 게이트. 견적 prefill JS(스니펫 29)는 이미 자체
+  가드 + 인라인 <1KB 라 미변경(실익 없음). 스니펫 22 는 CSS 라 범위 밖.
+- [ ] **M10 — 포트폴리오 사례 2건, 둘 다 자체 제작** ("고객 의뢰 아님" 명시).
+  실제 고객 사례 확보 시 추가. (이번 범위 제외 — 콘텐츠/영업 진행에 따라)
 
 ### 검증만 하고 조치 안 한 항목 (참고, 문제 아님)
 - `/work/feed/`, `/comments/feed/`, `xmlrpc.php?rsd` 노출 — WP 표준.
@@ -112,6 +164,7 @@ C1–C4 (2026-08-28) + 아래 (2026-08-29) 로 "고객에게 `https://tenlune.co
 ## 배포 / 검증 메모
 
 - `tenlune-content` 플러그인 변경 = 로컬 편집 → `dist/tenlune-content-plugin.zip` 재빌드(Python `zipfile`, forward slash) → **사용자가 wp-admin → 플러그인 → 새로 추가 → 플러그인 업로드 → "현재 설치된 것을 업로드로 교체"**. git 원격·자동 배포 없음.
+- **테마 `tenlune` 변경도 동일** = 로컬 편집 → 버전 올림(`style.css` `Version:` + `functions.php` `TENLUNE_VERSION` 일치) → `dist/tenlune-theme.zip` Python `zipfile` 재빌드(루트 `tenlune/`, forward slash) → **사용자가 wp-admin → 외모 → 테마 → 새 테마 추가 → 테마 업로드 → "현재 활성 테마를 업로드한 것으로 교체"**. FSE 템플릿은 사이트 편집기 오버라이드(`wp_template`/`wp_template_part`)가 0건이라 테마 파일이 정본 → 업로드 즉시 반영(+ `wp cache purge`).
 - `DISALLOW_FILE_EDIT=true` — wp-admin 코드 편집기 **및 WPVibe `file/read`·`file/write` 전부 차단**. `.htaccess` 등 서버 파일은 사용자가 Cafe24 웹FTP/파일관리자로만 읽기·수정 가능. `DISALLOW_FILE_MODS` 미설정이라 플러그인 ZIP 업로드 교체는 가능.
 - 서버 실행 PHP = WPVibe `code_snippet` → 브라우저 승인 → 스니펫은 **꺼진 상태로 저장** → 사용자가 wp-admin `enable_url` 에서 활성화 (Claude 활성화 불가). 현재 활성 스니펫: 21(견적 JS)·22(견적 CSS)·29(폼 자동채움)·**39(사이트맵 임시 비활성 — M1)**.
 - WPVibe 등록 사이트 = `https://tenlune.com` (2026-08-29 전환, 옛 `minh05` 제거됨).
