@@ -8,8 +8,8 @@ WordPress 사이트가 여전히 Source of Truth**이고, 이 저장소는 그 �
 자동 배포 없음). 콘텐츠(페이지/글/CPT)와 옵션은 저장소가 아니라 사이트에만 있습니다.
 
 마지막 갱신일: 2026-08-29 (도메인 301 마이그레이션 / WPVibe→tenlune.com 이전 /
-C2·C3·M1·M2·M3 라이브 반영 / tenlune-content 0.1.3 / 테마 0.1.2 M6·M7·M9 /
-M5 첫-글 후속·M8 비-결함·M10 유지)
+C2·C3·M1·M2·M3 라이브 반영 / 테마 0.1.2 M6·M7·M9 / M5 첫-글 후속·M8 비-결함·M10 유지 /
+AI 견적 LLM 보강 배포·검증 — tenlune-content 0.1.6, provider OpenRouter(기본)/Groq(대체))
 
 ---
 
@@ -35,11 +35,15 @@ M5 첫-글 후속·M8 비-결함·M10 유지)
 - 테마: `tenlune` (커스텀 제작, FSE 블록 테마, TT5 자식, `wpvibe_authored: false`).
   버전 **`0.1.2`** (M6/M7/M9 반영, 라이브·저장소 일치). 반응형 CSS 이미 촘촘
   (아래 "확인된 기존 자산" 참고). 사이트 편집기 오버라이드 0건 → 테마 파일이 정본.
-- 커스텀 플러그인: `tenlune-content` — **버전 `0.1.3`** (라이브·저장소 일치). CPT `case`,
+- 커스텀 플러그인: `tenlune-content` — **버전 `0.1.6`** (라이브·저장소 일치). CPT `case`,
   택소노미 `case_type`, 케이스 필드/블록, `case_type` 아카이브 rewrite(C2),
-  OG/Twitter + `<meta name="description">` + 비-singular canonical(C3/M2/M3).
+  OG/Twitter + `<meta name="description">` + 비-singular canonical(C3/M2/M3),
+  `includes/ai-quote.php` = AI 견적 LLM 보강 REST 엔드포인트(아래 전용 섹션).
 - 활성 WPCode 스니펫: **21**(견적 JS)·**22**(견적 CSS)·**29**(문의 폼 자동채움)·
-  **39**(코어 사이트맵 임시 비활성 — M1, 첫 글 발행 시 해제).
+  **39**(코어 사이트맵 임시 비활성 — M1, 첫 글 발행 시 해제). (AI 견적 LLM 엔드포인트는
+  스니펫이 아니라 플러그인 안에 있음.)
+- AI 견적 LLM provider: 라이브 `wp-config.php` 상수 `TENLUNE_OPENROUTER_API_KEY` 설정됨
+  (값은 저장소·문서 어디에도 없음). 기본 provider=openrouter, model `qwen/qwen3.6-27b`.
 
 ## 2026-08-26 — 영업 시작 준비 작업 (완료)
 
@@ -119,8 +123,10 @@ M5 첫-글 후속·M8 비-결함·M10 유지)
 
 ### 알려진 이슈 / 후속 조치 필요 (사용자 확인 필요)
 
-> **2026-08-29 기준 갱신**: 아래 1·2·4·5 는 모두 해결됨. 미해결은 **3(AI LLM 보강
-> 엔드포인트)** 뿐이며, 이는 출시 필수가 아님(규칙 기반 계산기가 핵심이고 완전 동작).
+> **2026-08-29 기준 갱신**: 아래 1·2·4·5 해결. **3(AI LLM 보강 엔드포인트)도 2026-08-29
+> 해결** — WPCode 스니펫이 아니라 `tenlune-content` 플러그인 `includes/ai-quote.php` 로
+> 구현·배포(NinjaFirewall 오탐 회피). 멀티 provider(기본 OpenRouter, 대체 Groq),
+> 라이브 A/B/C/D 검증 완료. 상세는 맨 아래 "2026-08-29 — AI 견적 LLM 보강" 섹션.
 
 1. ~~**도메인 미연결**~~ **(2026-08-29 해결)** — `https://tenlune.com` 연결·정규화 완료,
    옛 도메인 전 스킴 301. 위 "사이트 기본 정보" + 아래 "2026-08-29" 섹션 참조.
@@ -271,7 +277,13 @@ PHP 직렬화 배열(`a:N:{s:len:"key";...}`)을 직접 SQL로 쓸 때는, Node.
 **주의**: 이 검증 과정에서 CF7 관리자 알림 메일이 실제로 2통 발송되었습니다(발신
 `test-e2e@example.com`, 테스트 데이터). 실제 문의가 아니므로 무시해도 됩니다.
 
-### AI LLM 보강 엔드포인트 — 아직 미배포 (다음 단계)
+### AI LLM 보강 엔드포인트 — ~~아직 미배포~~ (2026-08-29 배포·검증 완료, 맨 아래 섹션 참조)
+
+> 아래는 2026-08-26 시점 계획(당시 미배포). 실제로는 WPCode 스니펫이 아니라
+> **`tenlune-content` 플러그인 `includes/ai-quote.php`** 로 구현해 ZIP 업로드로 배포했고
+> (NinjaFirewall 오탐은 "코드가 WPVibe REST 쓰기로 들어가는 통로"에 대한 것이라 ZIP
+> 경로는 무관), 라이브에서 정상 동작 확인. Provider 는 Anthropic 대신 **OpenRouter
+> (기본) / Groq (대체)** 멀티 provider.
 
 규칙 기반 계산기(핵심 기능)와 문의 폼 2단 구조가 이제 완전히 검증되었으므로, 이 다음
 단계로 PHP LLM 엔드포인트를 업데이트된 v2 payload 형태(`service`, `features`,
@@ -542,3 +554,62 @@ curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall
   사용자가 wp-admin `enable_url` 에서 활성화(Claude 활성화 불가, WPCode 가 활성화 시
   fatal 검사).
 - 라이브 검증 = curl + 실제 Chrome UA(NinjaFirewall). agent-browser 는 차단됨.
+
+---
+
+## 2026-08-29 — AI 견적 LLM 보강 (배포·검증 완료)
+
+규칙 기반 견적 계산기(WPCode snippet 21 = `snippets/quote-tool-v2.js`, 가격/기간의 유일한
+소스)는 그대로 두고, 그 결과를 LLM이 자연어로 설명하는 서버측 엔드포인트를 추가했다.
+프런트엔드(snippet 21)에는 이미 `window.tlAiQuoteEndpoint` 훅과 `.tl-quote-ai` 렌더링이
+있었으므로 JS/CSS/CF7/문의 흐름은 미변경.
+
+### 구조 (`tenlune-content` 플러그인 `includes/ai-quote.php`)
+
+- **REST**: `POST /wp-json/tenlune/v1/ai-quote-explain`
+  body `{ service, features[], consultFeatures[], bundle|null, low, high, days, budget }`
+  → `200 { explanation: string|null }`. 프런트엔드는 `explanation` 이 있을 때만
+  `.tl-quote-ai` 를 표시하고, 없으면(키 없음·실패·레이트리밋·차단) 규칙 기반 결과만 유지.
+- **멀티 provider** (OpenAI 호환 `/chat/completions`, 3층 분리 = 프롬프트 생성 /
+  provider 레지스트리 / 통신):
+  | provider | base_url | model | 키 상수 (옵션 fallback) | 추가 |
+  |---|---|---|---|---|
+  | **openrouter (기본)** | `https://openrouter.ai/api/v1` | `qwen/qwen3.6-27b` | `TENLUNE_OPENROUTER_API_KEY` (`tenlune_openrouter_api_key`) | 헤더 `HTTP-Referer: https://tenlune.com`, `X-Title: Tenlune`; body `reasoning:{enabled:false}` |
+  | groq (대체) | `https://api.groq.com/openai/v1` | `qwen/qwen3.6-27b` | `TENLUNE_GROQ_API_KEY` (`tenlune_groq_api_key`) | 없음 |
+  - Groq 복귀 = `wp-config.php` 에 `define('TENLUNE_AI_QUOTE_PROVIDER','groq');` + Groq
+    키 상수. 코드·ZIP·프런트엔드·프롬프트 변경 불필요. `TENLUNE_AI_QUOTE_MODEL` 로 모델만
+    바꿀 수도 있음.
+- **API 키**: 라이브 서버 `wp-config.php` 상수(사용자가 직접 설정, 값은 저장소·대화 어디에도
+  없음). 프런트엔드/HTML/JS/REST 응답·헤더에 노출 안 됨. 선택된 provider 의 키만 읽음.
+- **보안/fallback**: 동일 출처(Origin/Referer) 검사 → 아니면 403 / IP(REMOTE_ADDR) 기반
+  레이트리밋 시간당 15회(초과 시 조용히 null) / service·features·budget·bundle 은
+  `PRICING` 라벨 화이트리스트만 통과(임의 프롬프트 문자열 차단) / `wp_remote_post`
+  timeout 12s · WP_Error · non-200 · 빈 completion → `{explanation:null}`.
+- **reasoning 모델 대응 (0.1.6)**: `qwen/qwen3.6-27b` 는 OpenRouter 메타에서 reasoning
+  `default_enabled:true` → 안 끄면 `max_tokens` 를 `<think>` 로 다 써 최종 답변이 빈
+  문자열(라이브 로그 `finish_reason=length`, output 정확히 320). OpenRouter 공식 unified
+  파라미터 `reasoning:{enabled:false}` 를 openrouter 요청 body 에만 추가(provider별
+  `extra_body`, Groq body 무변경), `max_tokens` 기본값 320→400, 파서는 방어적으로
+  `<think>…</think>` 제거.
+
+### 라이브 검증 (plugin 0.1.6)
+
+- A(단순 랜딩)/B(기업)/C(복합 웹앱+번들)/D(예산 불일치) 4 시나리오 — `quote-tool-v2.js`
+  `compute()` 로직 그대로 재현한 payload 로 same-origin POST.
+- 4/4 성공: HTTP 200, 3~6s, 한국어 3문장(236~256자), `<think>`·Markdown·영어 없음.
+  본문 숫자는 규칙 계산기의 `low`/`high`/`days` 만 등장 — 새 가격·기간 생성 없음.
+  선택 기능/번들을 정확히 반영. D는 예산 불일치를 인정하되 새 가격을 만들지 않고
+  "단계적 추가/단순화" 를 제안(프런트엔드의 예산 대안 흐름과 일치).
+- 보안: 교차 출처 403, 화이트리스트 밖 문자열 → 즉시 null(외부 호출 전), 레이트리밋
+  15회 도달 시 차단 확인(검증 중 소진 → 해당 IP transient 1건만 삭제해 재검증, 자동 복원),
+  키/Authorization/provider URL 이 HTML·JS·REST 응답·헤더에 없음.
+- 회귀: `/services/` 200, 규칙 견적·CTA·`?prefill=` 문의 흐름 그대로, 다른 페이지에
+  `window.tlAiQuoteEndpoint` 미노출, C3/M2/M3·M6/M7/M9·도메인 301·WPVibe·robots·sitemap
+  전부 유지.
+- 참고: 검증 중 A 1회가 12.5s OpenRouter 라우팅 지연으로 timeout→null(fallback 정상),
+  재시도 3.2s 정상. timeout 12s + null fallback 이 최악을 한정.
+
+### 폐기
+
+`snippets/ai-quote-llm-endpoint-v2.php` (Anthropic 버전 초안) 는 폐기 — 내용은 "플러그인
+`includes/ai-quote.php` 로 이관" 포인터만 남김.

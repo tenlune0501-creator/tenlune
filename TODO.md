@@ -1,6 +1,6 @@
 # TODO — Tenlune 출시 준비
 
-마지막 갱신: 2026-08-29 (C2/C3 커밋 · 도메인 301(M4) · sitemap(M1) · meta description·canonical(M2/M3)·발췌 · 테마 0.1.2 M6/M7/M9 완료 / M5·M8·M10만 후속으로 남음)
+마지막 갱신: 2026-08-29 (C2/C3 · 도메인 301(M4) · sitemap(M1) · M2/M3·발췌 · 테마 0.1.2 M6/M7/M9 · AI 견적 LLM 보강(tenlune-content 0.1.6, OpenRouter 기본/Groq 대체) 배포·검증 완료 / M5·M8·M10만 후속)
 
 목표: 고객에게 `https://tenlune.com` 링크를 보내고 작업 문의를 받을 수 있는 상태.
 
@@ -28,7 +28,7 @@
 
 ---
 
-## ✅ 2026-08-29 완료 — C2/C3 커밋 · 도메인 301(M4) · sitemap(M1) · M2/M3 · 발췌 · 테마 0.1.2(M6/M7/M9)
+## ✅ 2026-08-29 완료 — C2/C3 · 도메인 301(M4) · sitemap(M1) · M2/M3 · 발췌 · 테마 0.1.2(M6/M7/M9) · AI 견적 LLM 보강(0.1.6)
 
 ### C2 / C3 로컬 변경 커밋 (구 "내일 이어서 1")
 - `tenlune-content` 플러그인 버전 `0.1.1 → 0.1.2` (헤더 `Version:` + `TENLUNE_CONTENT_VERSION` 일치).
@@ -94,6 +94,40 @@ audit Medium/Low 중 안전하게 처리 가능한 3건을 테마 한 번 배포
   robots(Sitemap 0)·`/wp-sitemap.xml` 404 유지.
 - **롤백**: 이전 `dist/tenlune-theme.zip`(`git show HEAD~2:dist/tenlune-theme.zip`) 재업로드
   또는 `git checkout` 후 재빌드. DB·옵션·콘텐츠 변경 없음.
+
+### AI 견적 LLM 보강 — `tenlune-content` 0.1.4 → 0.1.6 (배포·라이브 검증 완료)
+
+규칙 기반 견적 계산기(snippet 21)는 미변경(가격/기간의 유일한 소스). 그 결과를 LLM 이
+2~4문장 한국어로 설명하는 **서버측 REST 엔드포인트**를 플러그인에 추가. 프런트엔드에 이미
+있던 `window.tlAiQuoteEndpoint` 훅 + `.tl-quote-ai` 렌더를 재사용 → `quote-tool-v2.js` /
+`quote-tool-style.css` / `contact-prefill.js` / CF7 / 테마 미변경.
+
+- **`includes/ai-quote.php` 신규** — `POST /wp-json/tenlune/v1/ai-quote-explain` →
+  `{explanation:string|null}`. 동일 출처(Origin/Referer) 검사 → 403 / REMOTE_ADDR 기반
+  레이트리밋 15회/시 / service·features·budget·bundle 은 `PRICING` 라벨 화이트리스트만
+  통과 / timeout 12s·WP_Error·non-200·빈 응답 → `{explanation:null}`(규칙 견적은 그대로).
+- **멀티 provider** (OpenAI 호환 `/chat/completions`, 3층 분리): 기본 **openrouter**
+  (`qwen/qwen3.6-27b`, 헤더 `HTTP-Referer`/`X-Title`, body `reasoning:{enabled:false}`),
+  대체 **groq** (`qwen/qwen3.6-27b`, extra_body 없음). 전환 = `wp-config.php` 에
+  `define('TENLUNE_AI_QUOTE_PROVIDER','groq')` + Groq 키 상수. 코드/ZIP/프런트엔드 무변경.
+- **키**: 라이브 `wp-config.php` 상수(`TENLUNE_OPENROUTER_API_KEY` 등). 저장소·문서·응답
+  어디에도 값 없음. 선택된 provider 의 키만 읽음.
+- **0.1.6 수정** — `qwen3.6-27b` 는 OpenRouter 에서 reasoning `default_enabled:true` → 안
+  끄면 `max_tokens` 를 `<think>` 로 다 써 최종 답변이 빈 문자열(라이브 로그
+  `finish_reason=length`, output 정확히 320). openrouter 요청 body 에만 공식 파라미터
+  `reasoning:{enabled:false}` 추가(provider별 `extra_body`, Groq body 무변경), `max_tokens`
+  320→400, 파서 방어적 `<think>` 제거.
+- 커밋: (아래 이 세션 커밋 참조)
+- **라이브 검증 (0.1.6)**: A/B/C/D 시나리오 4/4 성공 — HTTP 200, 3~6s, 한국어 3문장
+  (236~256자), `<think>`·Markdown·영어 없음, 본문 숫자는 규칙 `low/high/days` 만(새 숫자
+  생성 0), 선택 기능/번들 정확 반영, D(예산 불일치)는 새 가격 없이 "단계적 추가/단순화"
+  제안. 보안: 교차 출처 403 / 화이트리스트 밖 → 즉시 null / 레이트리밋 15회 도달 시 차단
+  (검증 중 소진 → 해당 IP transient 1건만 삭제해 재검증, 자동 복원) / 키·Authorization·
+  provider URL 이 HTML·JS·REST 응답·헤더에 없음. 회귀: `/services/` 200·견적·CTA·prefill
+  그대로, 타 페이지 `window.tlAiQuoteEndpoint` 미노출, C3/M2/M3·M6/M7/M9·도메인 301·
+  WPVibe·robots·sitemap 유지. (참고: A 1회 12.5s OpenRouter 라우팅 지연 timeout→null,
+  재시도 정상. timeout 12s + null fallback 이 최악을 한정.)
+- `snippets/ai-quote-llm-endpoint-v2.php`(Anthropic 초안) 폐기 — 플러그인 이관 포인터만.
 
 ---
 
