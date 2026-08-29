@@ -1,26 +1,43 @@
 # PROJECT_CONTEXT.md — Tenlune
 
 이 문서는 Tenlune 웹사이트(WordPress, cafe24 호스팅)에 대한 지속적인 프로젝트 컨텍스트
-문서입니다. class-material-manager와 달리 이 프로젝트는 로컬 git 저장소가 없고, 사이트
-자체(테마·플러그인·콘텐츠)가 유일한 소스입니다. 이 파일은 로컬에만 존재하는 참고 문서이며,
-실제 상태는 항상 사이트 자체가 우선합니다.
+문서입니다. **2026-08-29 이후 이 저장소(`C:\Users\minh0\Tenlune`)는 로컬 git 저장소**로,
+테마(`wp-content/themes/tenlune/`)·커스텀 플러그인(`wp-content/plugins/tenlune-content/`)·
+WPCode 스니펫 사본(`snippets/`)·디자인 기준 자료(`design/`)를 추적합니다. 다만 **라이브
+WordPress 사이트가 여전히 Source of Truth**이고, 이 저장소는 그 사본입니다(원격 없음,
+자동 배포 없음). 콘텐츠(페이지/글/CPT)와 옵션은 저장소가 아니라 사이트에만 있습니다.
 
-마지막 갱신일: 2026-08-26 (v1 가격 정책 개편 및 문의 폼 구조 개선 반영)
+마지막 갱신일: 2026-08-29 (도메인 301 마이그레이션 완료 / WPVibe→tenlune.com 이전 /
+C2·C3·M1·M2·M3 라이브 반영 / tenlune-content 0.1.3 / 문서 최종 정리)
 
 ---
 
-## 사이트 기본 정보
+## 사이트 기본 정보 (2026-08-29 현재)
 
-- 운영 도메인(목표): tenlune.com — **아직 연결 안 됨**. 현재 실제 접속 주소는
-  `https://minh05.mycafe24.com` (cafe24 임시 서브도메인)
-- 워드프레스 관리: WPVibe(Claude Code 연동)를 통해 원격으로 관리. `wp-config.php`에
-  `DISALLOW_FILE_EDIT`가 설정되어 있어 테마/플러그인 PHP 파일 직접 편집은 막혀 있고,
-  콘텐츠(페이지/글/커스텀 포스트타입)는 REST API로, 서버 실행 코드는 WPCode 플러그인의
-  코드 스니펫(사람 승인 필요)으로 다룹니다.
-- 테마: `tenlune` (커스텀 제작, Full Site Editing 블록 테마). `wpvibe_authored: false`
-  — WPVibe가 아니라 별도로 만들어진 테마입니다. 반응형 CSS가 이미 잘 갖춰져 있습니다
-  (아래 "확인된 기존 자산" 참고).
-- 커스텀 플러그인: `tenlune-content` (커스텀 포스트타입 `case`="제작 사례" 등 등록).
+- **운영 도메인: `https://tenlune.com` — 연결·정규화 완료.** WP `siteurl`/`home` =
+  `https://tenlune.com` (REST 루트로 재확인). 아래 리다이렉트가 전부 동작:
+  - `http://tenlune.com`, `http/https://www.tenlune.com` → **301** → `https://tenlune.com`
+  - `http://minh05.mycafe24.com/*` → **301** → `https://tenlune.com/*` (기존, 경로·쿼리 보존)
+  - `https://minh05.mycafe24.com/*` → **301** → `https://tenlune.com/*`
+    (2026-08-29 추가 — `/minh05/www/.htaccess` 최상단 host 규칙, 아래 섹션 참조)
+  - 옛 도메인 어떤 스킴으로 들어와도 1홉으로 `https://tenlune.com` 도착, 루프 없음.
+- **HSTS 없음** (양쪽 호스트). `Really Simple Security` 플러그인은 **비활성**
+  (`wp plugin list` = `9.1.2 inactive`). HTTPS 는 WordPress 코어 스킴 보정 + 위 301 로 유지.
+- 워드프레스 관리: WPVibe(Claude Code 연동). **2026-08-29 WPVibe 등록이
+  `minh05.mycafe24.com` → `https://tenlune.com` 으로 이전됨** (옛 등록 제거,
+  Application Password revoke). 이제 모든 WPVibe 호출은 `tenlune.com` 을 향합니다.
+- `wp-config.php` `DISALLOW_FILE_EDIT=true` — wp-admin 코드 편집기 **및 WPVibe
+  `file/read`·`file/write` 전부 차단**. `.htaccess` 등 서버 파일은 사용자가 Cafe24
+  웹FTP/파일관리자로만 읽기·수정 가능. `DISALLOW_FILE_MODS` 미설정 → 플러그인 ZIP
+  업로드 교체는 가능. 서버 실행 코드는 WPCode 스니펫(브라우저 승인 → 꺼짐 저장 →
+  사용자가 wp-admin 에서 활성화; Claude 활성화 불가).
+- 테마: `tenlune` (커스텀 제작, FSE 블록 테마, `wpvibe_authored: false`). 버전 `0.1.1`.
+  반응형 CSS 이미 촘촘 (아래 "확인된 기존 자산" 참고).
+- 커스텀 플러그인: `tenlune-content` — **버전 `0.1.3`** (라이브·저장소 일치). CPT `case`,
+  택소노미 `case_type`, 케이스 필드/블록, `case_type` 아카이브 rewrite(C2),
+  OG/Twitter + `<meta name="description">` + 비-singular canonical(C3/M2/M3).
+- 활성 WPCode 스니펫: **21**(견적 JS)·**22**(견적 CSS)·**29**(문의 폼 자동채움)·
+  **39**(코어 사이트맵 임시 비활성 — M1, 첫 글 발행 시 해제).
 
 ## 2026-08-26 — 영업 시작 준비 작업 (완료)
 
@@ -100,8 +117,11 @@
 
 ### 알려진 이슈 / 후속 조치 필요 (사용자 확인 필요)
 
-1. **도메인 미연결**: 아직 `tenlune.com`이 아니라 `minh05.mycafe24.com`입니다. 영업에
-   실제 도메인을 쓰려면 도메인 연결이 우선입니다.
+> **2026-08-29 기준 갱신**: 아래 1·2·4·5 는 모두 해결됨. 미해결은 **3(AI LLM 보강
+> 엔드포인트)** 뿐이며, 이는 출시 필수가 아님(규칙 기반 계산기가 핵심이고 완전 동작).
+
+1. ~~**도메인 미연결**~~ **(2026-08-29 해결)** — `https://tenlune.com` 연결·정규화 완료,
+   옛 도메인 전 스킴 301. 위 "사이트 기본 정보" + 아래 "2026-08-29" 섹션 참조.
 2. ~~**CF7 문의 폼 라벨이 영어**: 기능은 정상이지만 라벨 번역이 REST 경로로는 반영되지
    않았습니다. wp-admin에서 직접 수정 권장.~~ **(2026-08-26 해결됨 — 아래 새 섹션 참고)**
 3. **AI 견적 도구 — 규칙 기반 계산기(핵심 기능)는 활성화·검증 완료**: JS 계산
@@ -123,10 +143,13 @@
      규칙 기반 견적 계산기는 완전히 동작하며, 이게 핵심 기능입니다.** LLM 설명 보강까지
      쓰려면 추가로 `tenlune_ai_quote_api_key` 옵션에 Anthropic API 키가 필요합니다
      (미설정 시 규칙 기반 결과만 표시 — 정상 동작, fallback으로 설계됨).
-4. **포트폴리오 이미지 없음**: 두 사례 모두 대표 이미지가 없습니다. 실제 스크린샷을
-   추가하면 좋습니다.
-5. **SEO 메타 디스크립션/OG 태그**: 전용 SEO 플러그인이나 추가 코드 스니펫이 필요합니다
-   (이번 범위에는 포함하지 않았습니다).
+4. ~~**포트폴리오 이미지 없음**~~ **(2026-08-28 해결)** — case 18·19 에 대표 이미지
+   적용 (attachment 32·33). 아래 "2026-08-28 — 제작 사례 대표 이미지" 섹션 참조.
+5. ~~**SEO 메타 디스크립션/OG 태그**~~ **(2026-08-28~29 해결, SEO 플러그인 없이)** —
+   `tenlune-content/includes/social-meta.php` 가 전 페이지에 OG/Twitter(C3) +
+   `<meta name="description">`(M2) + 비-singular `<link rel="canonical">`(M3) 출력.
+   Services/Contact/About/Privacy 는 수동 `post_excerpt` 로 설명문 정제. 아래 해당
+   섹션들 참조.
 
 ### 유지보수 시 주의사항
 
@@ -257,3 +280,219 @@ PHP 직렬화 배열(`a:N:{s:len:"key";...}`)을 직접 SQL로 쓸 때는, Node.
 유사해 정상적으로 의심된 것으로 판단, 우회 시도하지 않음) 이 파일 자체는 여전히
 `code_snippet` 도구로 저장할 수 없고, wp-admin의 WPCode 편집기에 사용자가 직접
 붙여넣어야 합니다.**
+
+---
+
+## 2026-08-28 — 제작 사례 대표 이미지 적용 (완료)
+
+위 "알려진 이슈" 4번(포트폴리오 이미지 없음) 해소:
+
+- Case **18** "Tenlune 홈페이지" ← attachment **32** (`tenlune-home-case-cover.png`)
+- Case **19** "수업자료 관리 도구" ← attachment **33** (`class-material-manager-case-cover.png`)
+- 둘 다 1600×1000 (16:10), WP 표준 미디어 업로드 + `set_post_thumbnail()` 경로로
+  적용(REST 콘텐츠/DB 직접수정 아님). 홈 `/` 와 `/work/` 모두 `has-post-thumbnail`
+  + `core/post-featured-image` 로 정상 렌더(데스크톱 16:10 / 모바일 4:3 crop,
+  `object-fit:cover; object-position:center top`).
+- 원본 로컬 이미지는 `design/case-images/` 에 있고 미수정. 처음 업로드 시 파일명이
+  한글+em-dash(`—`)라 raw URL 이 404 나는 문제가 있어 ASCII 파일명으로 재업로드,
+  중간 생성물(attachment 30·31)은 사용자 승인 후 삭제.
+- 캐시: `wp super-cache flush` + `wp cache flush` 실행.
+
+---
+
+## 2026-08-28 — /work/ 모바일 반응형 조사 (코드 미수정) + 도메인 마이그레이션 이슈 기록
+
+> **2026-08-29 종결**: (1) `/work/` 반응형 — 이후 세션에서 라이브 `/work/`·`/work/type/`·
+> case 상세를 여러 폭에서 재확인, 정상. 코드 변경 없이 종결(재확인 pending 해제).
+> (2) 도메인 마이그레이션 — 아래 🔴 항목은 **완료**됨. 자세한 내용은 맨 아래
+> "2026-08-29 — 도메인 301 마이그레이션" 섹션.
+
+### /work/ 반응형 — 보고된 증상이 현재 소스에서 재현 안 됨
+
+사용자가 `tenlune.com/work/` 를 390px 에서 열었을 때 "레이아웃이 모바일 폭으로
+줄지 않고, 데스크톱 폭 콘텐츠가 가운데 남아 좌우가 잘리며, 소개문구가 잘리고,
+가로 스크롤이 발생" 을 보고했습니다. 조사 결과:
+
+- 라이브 `/work/` HTML(캐시 purge 후 `minh05.mycafe24.com`·`tenlune.com` 양쪽
+  새로 fetch) + 라이브 `tenlune.css` 를 로컬 브라우저로 **360 / 390 / 768 / 1440px**
+  렌더 → **전부 정상**. `.tl-work-grid` 는 <760px 1열 / ≥760px 2열 로 올바르게
+  동작, 가로 오버플로·소개문구 잘림 없음. 390px 를 넘는 DOM 요소를 하나도
+  특정하지 못함.
+- `.tl-work-grid` CSS (`wp-content/themes/tenlune/assets/css/tenlune.css` L624–632)
+  는 이미 `grid-template-columns: 1fr` (base) + `@media (min-width:760px){ 1fr 1fr }`.
+  로컬 == 라이브 (MD5 `a98d09cd…`, 완전 동일). `/work/` 경로에 고정 px 폭·
+  `white-space:nowrap`·`alignwide/full` 없음.
+- NinjaFirewall 이 자동 브라우저의 `/work/` 접근을 **양쪽 도메인 모두 403 차단** →
+  실제 라이브 URL 을 브라우저로 직접 렌더 검증은 못 함(라이브 HTML + 라이브 CSS
+  로컬 렌더로 대체).
+- **조치**: `wp super-cache flush` + `wp cache flush` 실행(서버 캐시 재생성).
+  **코드·CSS·구조·Git 변경 없음.**
+- **유력한 배경**: 오래된 캐시(브라우저의 stale `tenlune.css` `?ver=0.1.1` 또는
+  `tenlune.com` 엣지 캐시가 예전 상태로 데워짐). 사용자가 하드 리프레시(Ctrl+Shift+R)
+  후 390px 재확인 예정. 재확인에서도 깨지면 그때의
+  `document.documentElement.scrollWidth` 값 + 넘치는 DOM 요소 목록을 받아 최소
+  수정(후보: `.tl-work-grid` 를 `grid-template-columns: minmax(0,1fr)` 로 하드닝 —
+  grid+이미지 blowout 표준 방어책, 정상일 땐 시각적 변화 0)을 승인받아 진행.
+
+### ✅ 별도 이슈 — 도메인 마이그레이션 (2026-08-29 완료)
+
+> 아래는 2026-08-28 시점 기록(당시 미완료). **2026-08-29 에 전부 해소**됨 —
+> `siteurl`/`home` 은 이미 `https://tenlune.com` 이었고(문서만 stale 이었음),
+> mixed content·srcset 누출도 해소, 옛 도메인은 https 까지 301. 상세는 맨 아래
+> "2026-08-29 — 도메인 301 마이그레이션" 섹션. 아래 문단은 이력으로 남겨둡니다.
+
+위 "알려진 이슈" 1번(도메인 미연결)은 부분적으로만 해소됨:
+
+- `tenlune.com` 은 **연결됨** — `https://tenlune.com/work/` 가 이 사이트의 HTML 을
+  200 으로 서빙(`Link: <https://minh05.mycafe24.com/wp-json/>`, 같은 title/구조,
+  리다이렉트 없음).
+- 그러나 WP `siteurl` / `home` 옵션은 여전히 **`http://minh05.mycafe24.com/`**
+  (HTTP 스킴 + 옛 도메인). HTTPS 는 **Really Simple SSL** 플러그인이 출력 시점에
+  `http→https` 로 덮어써서 유지 중.
+- 부작용:
+  - `tenlune.com/work/` 의 `<img srcset>` URL 이 `http://minh05.mycafe24.com/...`
+    로 새어 나옴 → HTTPS 페이지에서 **mixed content**. (`src` 는 https 로 정상)
+  - 모든 CSS / JS / 이미지 / canonical 이 `tenlune.com` 이 아니라 옛 도메인
+    `minh05.mycafe24.com` 을 가리킴 (SEO·정본 URL·자산 크로스도메인 로드).
+  - 캐시 variant 에 따라 예전 브라우저에서 `http://` 스타일시트가 mixed-content
+    차단되면 "CSS 없는 화면" = 위 반응형 증상과 동일하게 보일 수 있음(재현은 못 했으나
+    가장 그럴듯한 배경).
+- **이것 자체는 `/work/` 반응형 오버플로의 직접 원인 아님** — 로컬 재현에서 CSS 를
+  전부 제거해도 390px 에서 가로 오버플로가 나지 않음.
+- **미실행 수정안**: `siteurl`/`home` → `https://tenlune.com/` 변경 + DB
+  search-replace (`minh05.mycafe24.com` → `tenlune.com`, `http:` → `https:`).
+  **도메인·호스팅 설정 변경**이라 백업 후 사용자 승인 하에 별도 작업으로만 진행.
+  사용자 요청으로 이번엔 손대지 않음.
+
+### 🟡 향후 정리 항목 — 테마 CSS 캐시 무효화
+
+- `tenlune.css` 가 `?ver=0.1.1` (테마 버전 고정) 로 제공되어 브라우저가 사실상
+  영구 캐시함. 테마 CSS 를 실제로 수정할 일이 생기면 `wp-content/themes/tenlune/
+  style.css` 의 `Version:` 헤더를 올려 쿼리스트링을 바꿔야 재방문자에게 반영됨.
+
+---
+
+## 2026-08-29 — 도메인 301 마이그레이션 · WPVibe 이전 · C2/C3/M1/M2/M3 · 문서 정리 (완료)
+
+이 저장소가 로컬 git 저장소로 자리잡은 뒤, "🔜 내일 이어서" 목록(C2/C3 커밋 · M4 도메인 ·
+M1 sitemap · M2/M3 검색·SNS)을 순서대로 라이브 반영·검증했습니다. 라이브 검증은 전부
+curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall 이 자동
+브라우저를 차단해 사용 불가.
+
+### C2 / C3 커밋 + `tenlune-content` 0.1.2
+
+- C2 — `case_type` 아카이브 rewrite 우선순위: `includes/post-types.php` 의
+  `tenlune_register_case_taxonomy()` 에 `add_rewrite_rule('work/type/([^/]+)/?$',
+  'index.php?case_type=$matches[1]', 'top')`. `/work/type/웹사이트/`·`/work/type/웹서비스/`
+  가 attachment 조회로 빠지지 않고 200 + 올바른 사례 노출.
+- C3 — `includes/social-meta.php` 신규 (`wp_head` 우선순위 5) + `tenlune-content.php`
+  require 1줄. OG/Twitter 태그 전 페이지 출력. 사례/글 = `og:type=article` + 대표이미지,
+  그 외 = `website` + 옵션 `tenlune_og_default_image`(attachment 36).
+- 플러그인 버전 `0.1.1 → 0.1.2`, `dist/tenlune-content-plugin.zip` Python `zipfile`
+  재빌드(루트 `tenlune-content/`, 전부 forward slash, CRC OK). 사용자 wp-admin 업로드
+  교체 → `wp plugin list` = `0.1.2 active` 확인.
+- 커밋: `145e0e0` fix(work) / `c25d64b` feat(content) / `a7614a5` chore(release)
+  (dist zip + `design/tenlune-og.png` + `design/tenlune-favicon.png` +
+  `design/case-images/`).
+
+### M4 — 옛 도메인 → 신 도메인 301
+
+- **WPVibe 재연결**: `connect_site('https://tenlune.com')` (브라우저 승인) → 검증
+  (site_info / plugin list / `wp-json/wpvibe/v1` 200) → 기존 `minh05.mycafe24.com`
+  등록 `remove_site` (Application Password revoke). 현재 등록 사이트 1개
+  = `Tenlune / https://tenlune.com`.
+- **적용 전 확인**: `http://minh05…/*` 및 `http/https://(www.)tenlune.com` 은 이미
+  경로+쿼리 보존 301. `siteurl`/`home` 도 이미 `https://tenlune.com`(지난 세션에
+  변경됨 — 이 문서가 stale 이었음). 남은 구멍 = `https://minh05.mycafe24.com/*` 만 200.
+  origin = Apache(`.htaccess` 유효), 앞단 openresty.
+- **적용**: Cafe24 도메인 포워딩은 기본 도메인(`*.mycafe24.com`)이라 대상 선택 불가
+  ("이용 가능한 도메인이 없습니다") → `.htaccess` 폴백. 사용자가 Cafe24 웹FTP 로
+  **`/minh05/www/.htaccess` 최상단**에 아래 블록 추가:
+
+  ```apache
+  # BEGIN Tenlune canonical host (old-domain -> tenlune.com 301) 2026-08-29
+  <IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/ [NC]
+  RewriteCond %{HTTP_HOST} ^(www\.)?minh05\.mycafe24\.com$ [NC]
+  RewriteRule ^ https://tenlune.com%{REQUEST_URI} [R=301,L,NE]
+  </IfModule>
+  # END Tenlune canonical host
+  ```
+  (`NE` = 한글 슬러그 `%..` 이중 인코딩 방지. 쿼리스트링은 mod_rewrite 기본으로 append.
+  `# BEGIN WordPress`/`# BEGIN NinjaFirewall` 블록보다 위, 그 블록들은 미수정.)
+- **백업**: `/minh05/www/.htaccess.bak-20260829` (Cafe24 웹FTP). 롤백 = 백업 재업로드
+  또는 삽입 블록만 삭제. DB 변경 없음.
+- **검증**: `https://minh05.mycafe24.com/`·한글 taxonomy 경로+`?x=1` → 301 →
+  `https://tenlune.com/...` (경로/쿼리/인코딩 보존, 1홉, 루프 없음). `tenlune.com` 200
+  유지, `wp-json/wpvibe/v1` 200 유지. `<meta property="og:url">`·canonical·srcset 에서
+  `minh05` / 안전하지 않은 `http://` 참조 0.
+
+### M1 — sitemap 404 (D안: 코어 사이트맵 임시 비활성)
+
+- **원인**: `show_on_front=posts` + 발행 글 0개라, 코어가 `/wp-sitemap*.xml` 에 유효
+  XML 을 담아도 HTTP 404 로 반환(`handle_404` 경로). 커스텀 테마/플러그인/스니펫 무관.
+  `wp rewrite flush` 로는 해결 안 됨(상태코드 이슈).
+- **조치**: WPCode PHP 스니펫 **id 39** `M1: 코어 사이트맵 임시 비활성화` =
+  `add_filter( 'wp_sitemaps_enabled', '__return_false' );` (location `everywhere`).
+  사용자 승인·활성화 → `wp rewrite flush`(고아 `wp-sitemap*` 규칙 제거) → `wp cache purge`.
+- **결과**: `robots.txt` 에서 `Sitemap:` 줄 제거. `/wp-sitemap.xml`·하위 4종·`.xsl`
+  전부 일반 WP 404(테마 404 HTML — "깨진 XML 사이트맵" 아님).
+- 🔁 **후속 (첫 실제 블로그 글 발행 시 코어 사이트맵 재활성화)**:
+  1. WPCode 에서 스니펫 **id 39 비활성화**
+     (`https://tenlune.com/wp-admin/admin.php?page=wpcode-snippet-manager&snippet_id=39`).
+  2. `wp rewrite flush` (또는 설정 → 퍼머링크 저장) — `wp-sitemap*` 규칙 재생성.
+  3. `wp cache purge`.
+  4. 검증: `/wp-sitemap.xml` → 200 + 유효 XML, `robots.txt` 에 `Sitemap:` 줄 복귀.
+  - M5(블로그 구조)·M6(빈 Journal 섹션) 정리와 함께 처리 권장.
+
+### M2 / M3 + 페이지 발췌 — `tenlune-content` 0.1.3
+
+- **M2** — `tenlune_social_meta_render()` 에 `<meta name="description">` 추가.
+  `og:description` 과 같은 컨텍스트별 `$desc`(단일=발췌, 홈/검색=태그라인, 아카이브=기본
+  문구) 재사용. 코어·테마가 이 태그를 안 내보내므로 중복 없음.
+- **M3** — 같은 함수에 `<link rel="canonical">` 추가. `is_front_page() || is_home() ||
+  is_post_type_archive('case') || is_tax('case_type')` 에만 출력 → 코어
+  `rel_canonical()`(singular 전용)과 중복 안 됨. 홈=`https://tenlune.com/`,
+  `/work/`=아카이브 링크, `/work/type/{slug}/`=term 링크.
+- **페이지 발췌 (코드 없음)**: `wp post update` 로 Services(14)·Contact(13)·About(15)·
+  Privacy(3) 에 수동 `post_excerpt` 설정. 자동 발췌의 "01 · … 02 · …" 구조 텍스트·잘림
+  제거. `social-meta.php` 가 이미 `get_the_excerpt()` 를 쓰므로 `og:description` ·
+  `twitter:description` · `meta[name=description]` 에 그대로 반영. 롤백 = `post_excerpt`
+  빈 값.
+- 플러그인 `0.1.2 → 0.1.3`, ZIP 재빌드·검증(11엔트리·forward slash·CRC OK·작업트리
+  일치·내부 0.1.3). 사용자 wp-admin 업로드 교체 → `wp plugin get` = `0.1.3 active`.
+- 커밋: `2d11d4f` feat(content): emit meta description and canonical for non-singular
+  views / `83bb5bf` chore(release): rebuild plugin package at 0.1.3.
+- **라이브 검증**: 9개 페이지(홈·work·work/type·services·contact·about·privacy·case·blog)
+  전부 200 + `meta[name=description]` 1 + `canonical` 1 + `og:description` 1. singular
+  canonical 중복 0. PHP 에러 0. OG/Twitter 세트(og:*=10, twitter:*=4)·social-meta
+  블록 마커 2(=1블록) 유지.
+
+### 미디어 / 옵션 / 스니펫 요약 (현재)
+
+| 항목 | 값 |
+|---|---|
+| `site_icon` | attachment **35** (`tenlune-favicon.png`, 1254×1254) — 파비콘 "T", `design/tenlune-favicon.png` |
+| `tenlune_og_default_image` | attachment **36** (`tenlune-og.png`, 1733×908) — 비-사례 페이지 OG 이미지, `design/tenlune-og.png` |
+| case 대표 이미지 | 18 ← attachment 32, 19 ← attachment 33 (`design/case-images/`) |
+| WPCode 스니펫 | 21 견적 JS · 22 견적 CSS · 29 폼 자동채움 · **39 사이트맵 임시 비활성(M1)** |
+| 수동 `post_excerpt` | 페이지 14·13·15·3 |
+| `blog_public` | `1` (색인 허용) / 발행 글 0개 / `show_on_front=posts` / `page_for_posts=16` |
+| `tenlune-content` 플러그인 | **0.1.3** (라이브·저장소 일치) |
+| 테마 `tenlune` | `0.1.1` (미변경) |
+
+### 배포 / 유지보수 절차 (갱신)
+
+- `tenlune-content` 코드 변경 = 로컬 편집 → 버전 올림(헤더 `Version:` + 상수 일치) →
+  `dist/tenlune-content-plugin.zip` **Python `zipfile`** 재빌드(forward slash 필수;
+  PowerShell `Compress-Archive` 는 `\` 로 만들어 Cafe24 설치 시 깨짐) → **사용자가
+  wp-admin → 플러그인 → 새로 추가 → 플러그인 업로드 → "현재 설치된 것을 업로드로 교체"**
+  → 활성 유지 확인 → curl 검증. git 원격·자동 배포 없음.
+- 서버 파일(`.htaccess` 등): `DISALLOW_FILE_EDIT` 로 WPVibe 도 못 읽음 → 사용자가
+  Cafe24 웹FTP/파일관리자로만. 수정 전 타임스탬프 백업 필수(같은 docroot 를
+  `tenlune.com` 도 공유 → 문법 오류 시 동시 500).
+- 서버 실행 PHP = WPVibe `code_snippet` → 브라우저 승인 → **꺼진 상태로 저장** →
+  사용자가 wp-admin `enable_url` 에서 활성화(Claude 활성화 불가, WPCode 가 활성화 시
+  fatal 검사).
+- 라이브 검증 = curl + 실제 Chrome UA(NinjaFirewall). agent-browser 는 차단됨.
