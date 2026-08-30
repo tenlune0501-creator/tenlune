@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'TENLUNE_VERSION' ) ) {
-	define( 'TENLUNE_VERSION', '0.1.2' );
+	define( 'TENLUNE_VERSION', '0.1.4' );
 }
 
 /**
@@ -143,3 +143,20 @@ add_filter(
 		return is_page( 'contact' ) ? $load : false;
 	}
 );
+
+/**
+ * `/blog/` 정적 페이지를 실제 Journal 목록(`/category/journal/`)으로 301 보냅니다. — M5 동선 정리
+ *
+ * `show_on_front=posts` 라서 `/blog/`(Page 16)는 글 목록이 아니라 거의 빈 정적 페이지였습니다.
+ * 전역 내비게이션의 "Blog" 는 `/category/journal/` 로 옮겼고, 옛 `/blog/` 로 들어오는
+ * 링크·북마크·검색 색인은 여기서 카테고리 아카이브로 넘깁니다.
+ * `show_on_front` / `page_for_posts` 구조는 건드리지 않습니다.
+ */
+function tenlune_redirect_blog_to_journal() {
+	if ( is_admin() || ! is_page( 'blog' ) ) {
+		return;
+	}
+	wp_safe_redirect( home_url( '/category/journal/' ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'tenlune_redirect_blog_to_journal' );
