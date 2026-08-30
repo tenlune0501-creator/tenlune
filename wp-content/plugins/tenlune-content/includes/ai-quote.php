@@ -277,6 +277,7 @@ function tenlune_ai_quote_whitelist() {
 			'신청 내역이나 등록된 정보를 직접 확인·관리하고 싶어요',
 			'외국어로도 보여주고 싶어요',
 			'현재 사용 중인 다른 서비스와 연결하고 싶어요',
+			'검색엔진 초기 등록 지원',
 		),
 		'budgets'  => array(
 			'아직 미정',
@@ -394,12 +395,18 @@ function tenlune_ai_quote_sanitize( $body ) {
  * @return array{system:string,user:string}
  */
 function tenlune_ai_quote_build_messages( array $p ) {
+	// 계산기는 이제 단일 예상가격을 냅니다(low === high). 범위 표현을 만들지 않도록
+	// 사실도 단일 금액으로 전달하고, low 와 high 가 다를 때만(장래 대비) 범위로 씁니다.
+	$price_fact = ( (int) $p['low'] === (int) $p['high'] )
+		? '계산기가 확정한 단일 예상 견적: ' . number_format( $p['low'] ) . '원'
+		: '계산기가 확정한 예상 견적 범위: ' . number_format( $p['low'] ) . '원 ~ ' . number_format( $p['high'] ) . '원';
+
 	$facts = array(
 		'선택한 서비스: ' . $p['service'],
 		'선택한 기능: ' . ( $p['features'] ? implode( ', ', $p['features'] ) : '없음' ),
 		'상담 후 산정 항목: ' . ( $p['consultFeatures'] ? implode( ', ', $p['consultFeatures'] ) : '없음' ),
 		'공유 최적화 적용: ' . ( $p['bundle'] ? $p['bundle'] : '해당 없음' ),
-		'확정된 예상 견적 범위: ' . number_format( $p['low'] ) . '원 ~ ' . number_format( $p['high'] ) . '원',
+		$price_fact,
 		'확정된 예상 기간: ' . $p['days'] . '영업일',
 		'고객이 입력한 예산: ' . $p['budget'],
 	);
@@ -407,7 +414,7 @@ function tenlune_ai_quote_build_messages( array $p ) {
 	$system = '당신은 1인 웹 개발 스튜디오 Tenlune 의 견적 설명 도우미입니다. '
 		. '아래 사실은 규칙 기반 계산기가 이미 확정한 값입니다. 이 숫자(가격·기간)를 절대 '
 		. '바꾸거나 새로 계산하거나 추측하지 마세요 — 있는 그대로 자연스러운 한국어 설명문으로 '
-		. '풀어 쓰는 것이 유일한 역할입니다. 확정 견적이 아니라 예상 범위임을 전제로 씁니다.';
+		. '풀어 쓰는 것이 유일한 역할입니다. 확정 견적이 아니라 예상 금액임을 전제로 씁니다.';
 
 	$user = implode( "\n", $facts ) . "\n\n"
 		. '위 내용을 바탕으로 2~4문장으로만 작성하세요: '
@@ -416,6 +423,11 @@ function tenlune_ai_quote_build_messages( array $p ) {
 		. '(3) 공유 최적화가 적용됐다면 무엇이 공유되어 중복 구현이 줄었는지, '
 		. '(4) 예산과 예상 견적이 안 맞으면 현실적인 대안 제안. '
 		. '가격·기간 숫자는 위에 주어진 값만 그대로 인용하고 새 숫자를 만들지 마세요. '
+		. '예상 견적은 계산기가 확정한 하나의 금액입니다. "약 얼마~얼마", "얼마에서 얼마 사이" '
+		. '같은 범위·구간 표현을 만들지 말고 그 단일 금액만 그대로 쓰세요. '
+		. '"검색엔진 초기 등록 지원"이 선택 기능에 있으면 "Google·Naver 검색엔진 초기 등록을 '
+		. '지원한다"는 사실만 짧게 언급하고, 검색 순위·상위 노출·색인(크롤링) 완료 시점을 '
+		. '보장하거나 약속하는 표현은 절대 쓰지 마세요. '
 		. '불릿·제목 없이 이어지는 문단으로 씁니다.';
 
 	return array(
