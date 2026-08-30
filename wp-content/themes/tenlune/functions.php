@@ -160,3 +160,16 @@ function tenlune_redirect_blog_to_journal() {
 	exit;
 }
 add_action( 'template_redirect', 'tenlune_redirect_blog_to_journal' );
+
+/**
+ * 네이버 서치어드바이저 사이트 소유확인 메타. — 검색 등록용
+ *
+ * 콘텐츠를 서술하는 메타가 아니라 사이트 소유권 토큰이라, OG/description/canonical 을
+ * 내보내는 tenlune-content 플러그인(social-meta.php)이 아니라 여기(테마)에 둡니다.
+ * wp_head 우선순위 1 로 <head> 상단, 플러그인 메타(우선순위 5)보다 먼저 출력하며
+ * 기존 title·description·canonical·Open Graph·Twitter 출력에는 관여하지 않습니다.
+ */
+function tenlune_naver_site_verification() {
+	echo '<meta name="naver-site-verification" content="' . esc_attr( 'aff9a1c351eb4916e75fb010ce8718c403fef64b' ) . '" />' . "\n";
+}
+add_action( 'wp_head', 'tenlune_naver_site_verification', 1 );
