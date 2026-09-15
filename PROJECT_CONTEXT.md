@@ -7,7 +7,11 @@ WPCode 스니펫 사본(`snippets/`)·디자인 기준 자료(`design/`)를 추�
 WordPress 사이트가 여전히 Source of Truth**이고, 이 저장소는 그 사본입니다(원격 없음,
 자동 배포 없음). 콘텐츠(페이지/글/CPT)와 옵션은 저장소가 아니라 사이트에만 있습니다.
 
-마지막 갱신일: 2026-08-29 (도메인 301 마이그레이션 / WPVibe→tenlune.com 이전 /
+마지막 갱신일: 2026-09-15 (AI 견적 LLM provider 전환 — tenlune-content 0.1.9, 기본
+provider Groq/모델 qwen/qwen3.8-27b, Qwen 계열 모델 fallback 구현·라이브 검증. 아직
+로컬 코드만 수정, wp-admin 플러그인 업로드 미실행 — 맨 아래 새 섹션 참고)
+
+이전 갱신: 2026-08-29 (도메인 301 마이그레이션 / WPVibe→tenlune.com 이전 /
 C2·C3·M1·M2·M3 라이브 반영 / 테마 0.1.2 M6·M7·M9 / M5 첫-글 후속·M8 비-결함·M10 유지 /
 AI 견적 LLM 보강 배포·검증 — tenlune-content 0.1.6, provider OpenRouter(기본)/Groq(대체))
 
@@ -42,8 +46,11 @@ AI 견적 LLM 보강 배포·검증 — tenlune-content 0.1.6, provider OpenRout
 - 활성 WPCode 스니펫: **21**(견적 JS)·**22**(견적 CSS)·**29**(문의 폼 자동채움)·
   **39**(코어 사이트맵 임시 비활성 — M1, 첫 글 발행 시 해제). (AI 견적 LLM 엔드포인트는
   스니펫이 아니라 플러그인 안에 있음.)
-- AI 견적 LLM provider: 라이브 `wp-config.php` 상수 `TENLUNE_OPENROUTER_API_KEY` 설정됨
-  (값은 저장소·문서 어디에도 없음). 기본 provider=openrouter, model `qwen/qwen3.6-27b`.
+- AI 견적 LLM provider: **2026-09-15 부로 로컬 코드 기준이 바뀜(라이브는 아직 배포 전)** —
+  기본 provider=**groq**, model `qwen/qwen3.8-27b`. 라이브 `wp-config.php` 상수는 기존
+  `TENLUNE_OPENROUTER_API_KEY` 대신 `TENLUNE_GROQ_API_KEY` 가 설정되어 있어야 동작합니다
+  (값은 저장소·문서 어디에도 없음). 상세는 맨 아래 "2026-09-15 — AI 견적 LLM provider
+  전환" 섹션.
 
 ## 2026-08-26 — 영업 시작 준비 작업 (완료)
 
@@ -613,3 +620,83 @@ curl(실제 Chrome UA — NinjaFirewall) 기준. agent-browser 는 NinjaFirewall
 
 `snippets/ai-quote-llm-endpoint-v2.php` (Anthropic 버전 초안) 는 폐기 — 내용은 "플러그인
 `includes/ai-quote.php` 로 이관" 포인터만 남김.
+
+---
+
+## 2026-09-15 — AI 견적 LLM provider 전환: 기본 Groq/qwen3.8-27b + Qwen 모델 fallback (로컬 완료, 라이브 미배포)
+
+class-material-manager 프로젝트에서 이미 실제 검증된 "Groq OpenAI 호환 Chat Completions +
+동일 Qwen 계열 후속 모델 fallback" 원칙(`viewer/lib/tutor/providers/groq-fallback.ts` ·
+`groq-qwen.ts`)을 이 계산기 구조(`ai-quote.php`)에 맞게 최소 구현했다. 가격/기간 규칙
+엔진(quote-tool-v2.js, `PRICING`)·REST 계약·프런트엔드·프롬프트는 전혀 건드리지 않았다
+— provider/모델/fallback 계층만 변경.
+
+### 변경 내용
+
+- 기본 provider **openrouter → groq**, 기본 모델 **qwen/qwen3.6-27b → qwen/qwen3.8-27b**
+  (`tenlune_ai_quote_active_provider()` 기본값, `tenlune_ai_quote_providers()` 의 groq
+  항목). openrouter 항목은 대체 provider 로 레지스트리에 그대로 남겨둠(모델은 미변경,
+  `TENLUNE_AI_QUOTE_PROVIDER=openrouter` 로 언제든 되돌릴 수 있음).
+- **Qwen 계열 모델 fallback 신규 구현** (`tenlune_ai_quote_chat()` 오케스트레이션 +
+  `tenlune_ai_quote_parse_qwen_model_id()` / `_is_qwen_chat_candidate()` /
+  `_pick_fallback_model()` / `_fetch_model_ids()` / `_resolve_fallback_model()` /
+  `_is_model_unavailable_error()`): 기본 모델 1회 → 404 + `model_not_found` 류로 명백히
+  확인될 때만 `/models` 조회 → 같은 규모(size)·이상 버전의 Qwen 후속 모델로 1회 재시도.
+  401/403/429/5xx/network/timeout 은 대상 아님. `TENLUNE_AI_QUOTE_MODEL` 로 모델을 직접
+  고정한 경우 fallback 비활성(사용자 의도 존중). 후보 조회는 5분 transient 캐시.
+- 통신 함수를 `tenlune_ai_quote_chat_attempt()`(1회 시도, 상태코드/에러코드까지 반환)로
+  분리하고, `tenlune_ai_quote_chat()` 이 그 위에서 재시도 흐름만 담당하도록 재구성.
+  기존 프롬프트(`tenlune_ai_quote_build_messages()`)·화이트리스트·rate limit·same-origin
+  검사는 **완전히 무변경**.
+- 플러그인 `tenlune-content` **0.1.8 → 0.1.9**.
+
+### env / wp-config 상수 (기존 이름 그대로, 신규 이름 추가 없음)
+
+- 이미 존재하던 `TENLUNE_GROQ_API_KEY` (옵션 fallback `tenlune_groq_api_key`)를 그대로
+  사용 — 새 이름을 만들지 않음. **라이브에 이 상수가 설정돼 있어야** 새 기본값(Groq)이
+  동작한다. 지금까지는 `TENLUNE_OPENROUTER_API_KEY` 만 있었을 가능성이 있으므로, 배포
+  전에 라이브 `wp-config.php` 에 `TENLUNE_GROQ_API_KEY` 값이 있는지 사용자가 먼저
+  확인/추가해야 한다(Groq 콘솔에서 발급, 이 저장소·대화 어디에도 값 없음).
+- 모델 override 는 기존 상수 `TENLUNE_AI_QUOTE_MODEL` 재사용(신규 상수 없음).
+- 이 프로젝트는 순수 WordPress(로컬 Node/PHP 런타임 없음)라 `.env`/`.env.example` 파일이
+  없다 — env 는 전부 `wp-config.php` PHP 상수. 새로 만들지 않았다.
+
+### 검증
+
+- **정적 검증**: 로컬에 PHP 인터프리터가 없어 `php -l` 를 못 돌렸다. 대신 (1) 중괄호·
+  괄호·대괄호 균형을 스캔하는 Node 스크립트로 전체 파일 검사(불일치 0), (2) 기존 함수
+  시그니처·호출부(REST 콜백 `tenlune_ai_quote_explain()`)와의 연결을 코드 리딩으로
+  재확인. **실제 `php -l`/WP 유닛 테스트는 못 돌렸다는 한계를 명시한다.**
+- **실제 Groq live 검증** (바탕화면 `그록q api.txt` 의 키를 세션 중에만 안전하게 읽어
+  사용 — curl config 파일 경유로 헤더에 넣어 프로세스 인자·로그·이 문서에 키 값이
+  노출되지 않게 했고, 검증 후 즉시 삭제):
+  - `qwen/qwen3.8-27b` 로 실제 계산기 프롬프트(서비스=랜딩페이지, 200,000원/5영업일,
+    예산 미정)를 그대로 보낸 POST — **HTTP 200**, `finish_reason: stop`(reasoning 잘림
+    없음, `<think>` 없음), 한국어 3문장, "200,000원"·"5영업일" 숫자를 정확히 그대로
+    인용(새 숫자·범위 표현 없음).
+  - `GET /models` — 현재 Groq 카탈로그의 Qwen 계열은 `qwen/qwen3.8-27b` **1개뿐**(active
+    true). 즉 지금은 fallback 후보가 없는 상태 — 이 모델이 실제로 죽으면 규칙 기반
+    결과만 남는 안전한 null 로 귀결됨(의도한 동작).
+  - **fallback 후보 선택 로직의 실제 데이터 검증**: 예전 기본 모델이던 `qwen/qwen3.6-27b`
+    로 같은 프롬프트를 보내자 **실제로 HTTP 404** +
+    `{"error":{"code":"model_not_found","message":"The model \`qwen/qwen3.6-27b\` does not
+    exist or you do not have access to it."}}` — 우리 판별 함수가 정확히 이 모양을
+    본다. 이 모델 id 를 `pick_fallback_model()` 로직(Node 포트, 실제 `/models` 응답
+    데이터로 실행)에 넣으면 **`qwen/qwen3.8-27b` 를 정확히 선택**함(같은 27B, 상위
+    버전). 즉 "기본 모델이 나중에 실제로 deprecated 되면 → 지금의 `qwen/qwen3.8-27b` 로
+    정확히 fallback 된다"는 전체 경로를 실제 API 응답으로 end-to-end 확인했다(운영 중인
+    기본 모델을 깨뜨리지 않고, 이미 은퇴한 예전 모델 id 를 입력으로만 사용).
+  - **인증 오류 fallback 없음**: 가짜 키로 같은 요청 → **HTTP 401**
+    `{"error":{"code":"invalid_api_key", ...}}` — 판별 함수는 상태코드가 404 가 아니면
+    무조건 false 이므로 fallback 시도 자체가 불가능함을 코드·실제 응답 양쪽으로 확인.
+  - 키 값은 curl 요청 헤더에만 사용했고, 이 세션의 출력·로그·이 문서·git 추적 파일
+    어디에도 남기지 않았다(사용 후 scratchpad 의 키 파일도 즉시 삭제).
+- **회귀(코드 리딩 기준)**: `quote-tool-v2.js`·CF7·REST 계약(`{explanation:string|null}`)·
+  화이트리스트·rate limit·same-origin 검사·프롬프트 텍스트 — 전부 diff 에 없음(git diff
+  로 확인, 변경 파일은 `ai-quote.php`·`tenlune-content.php` 뿐).
+- **미실행**: wp-admin 플러그인 업로드(라이브 배포), `dist/tenlune-content-plugin.zip`
+  재빌드, git add/commit. 이번 작업 지시가 "이번 단계에서는 stage/commit/push/deploy
+  하지 마세요" 였으므로 의도적으로 하지 않음 — 다음 단계(사용자 승인 후)에서 (1) 라이브
+  `wp-config.php` 에 `TENLUNE_GROQ_API_KEY` 확인/설정, (2) `dist/tenlune-content-plugin.zip`
+  Python zipfile 재빌드, (3) wp-admin 플러그인 업로드 교체, (4) `wp plugin get` 버전
+  확인 + 라이브 curl 재검증이 필요하다.

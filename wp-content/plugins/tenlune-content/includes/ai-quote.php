@@ -1,35 +1,59 @@
 <?php
 /**
  * AI 견적 설명 보강 — 규칙 기반 계산 결과를 LLM 이 자연어로 설명.
- * (Phase 2 — 멀티 provider · OpenRouter reasoning off)
+ * (Phase 3 — 기본 provider Groq · 기본 모델 qwen/qwen3.8-27b · Qwen 계열 모델 fallback)
  *
  * 역할 분담이 이 파일의 핵심입니다.
  *  - 가격·기간 숫자는 프런트엔드 규칙 기반 계산기(WPCode snippet 21, quote-tool-v2.js)가
  *    유일하게 정합니다. 이 엔드포인트는 그 숫자를 "사실"로만 받아 설명 문장을 만들 뿐,
- *    숫자를 새로 계산하거나 바꾸지 않습니다(프롬프트로 강제).
+ *    숫자를 새로 계산하거나 바꾸지 않습니다(프롬프트로 강제). 기본 모델이 후속 Qwen
+ *    모델로 fallback 되어도 이 프롬프트/제약은 완전히 동일하게 적용됩니다.
  *  - 선택된 provider 의 키가 없거나 호출이 실패/타임아웃/레이트리밋이면 항상
  *    { "explanation": null } 을 200 으로 반환합니다. 규칙 기반 계산기는 이 엔드포인트
  *    없이도, 실패해도 완전히 동작합니다(quote-tool-v2.js 의 .catch / 조건부 렌더).
  *
- * 3층 분리:
+ * 4층 분리:
  *  - tenlune_ai_quote_build_messages()   — provider 무관. system/user 프롬프트(설명 생성).
  *  - tenlune_ai_quote_providers() / _active_provider() / _provider_config()
  *                                        — provider 레지스트리·선택·설정(데이터). 여기만
  *                                          바꾸면 provider 전환.
- *  - tenlune_ai_quote_chat()             — OpenAI 호환 POST {base_url}/chat/completions 통신.
+ *  - tenlune_ai_quote_chat_attempt()     — OpenAI 호환 POST {base_url}/chat/completions 통신
+ *                                          1회 호출(파싱·에러 분류 포함).
+ *  - tenlune_ai_quote_chat()             — 위 함수를 오케스트레이션. 기본 모델 1회 →
+ *                                          "모델 자체를 더 이상 쓸 수 없음"으로 확인된
+ *                                          경우에만 동일 Qwen 계열 후속 모델로 1회 재시도
+ *                                          (아래 "Qwen 모델 fallback" 참고).
  *                                          openrouter·groq 둘 다 동일 스키마라 provider 별
  *                                          분기 없음(base_url·model·headers·extra_body·키만
- *                                          설정에서 옴). 비호환 provider 는 이 함수만 재작성.
+ *                                          설정에서 옴). 비호환 provider 는 이 두 함수만 재작성.
  *
  *  reasoning 모델 대응: openrouter provider 는 extra_body 로 `reasoning:{enabled:false}` 를
  *  보냅니다(qwen3.6-27b 는 default_enabled=true 라 안 끄면 max_tokens 를 <think> 로 소진).
  *  파서는 혹시 섞여 오는 `<think>…</think>` 를 제거합니다. Groq 는 extra_body 가 비어 무변경.
  *
  * Provider 선택:
- *  - 기본값 = 'openrouter' (tenlune_ai_quote_active_provider() 안의 한 줄).
- *  - 전환: wp-config.php 에 `define('TENLUNE_AI_QUOTE_PROVIDER', 'groq');` 또는
+ *  - 기본값 = 'groq' (tenlune_ai_quote_active_provider() 안의 한 줄). 기본 모델은
+ *    provider 레지스트리의 'qwen/qwen3.8-27b' (Groq 확인값, tool calling·131K ctx).
+ *  - 전환: wp-config.php 에 `define('TENLUNE_AI_QUOTE_PROVIDER', 'openrouter');` 또는
  *    필터 `tenlune/ai_quote_provider` 한 곳. 그리고 해당 provider 의 키 상수만 설정.
  *  - 프런트엔드 / REST 라우트 / 규칙 기반 견적 / 프롬프트는 전환 시에도 무변경.
+ *
+ * Qwen 모델 fallback (`tenlune_ai_quote_chat()` 안, class-material-manager 프로젝트의
+ * Groq/Qwen fallback(`viewer/lib/tutor/providers/groq-fallback.ts`)에서 실제 검증된 것과
+ * 같은 원칙을 이 계산기 구조에 맞게 최소 구현):
+ *  - 정상 상황: 활성 provider 의 기본 모델을 1회 호출. `/models` 조회조차 하지 않음.
+ *  - 그 호출이 404 + `model_not_found` 류(모델이 없음/deprecated/removed/unavailable)로
+ *    "명백히" 확인되고, `TENLUNE_AI_QUOTE_MODEL` 로 모델을 사용자가 직접 override 하지
+ *    않았을 때만 `{base_url}/models` 를 조회해 같은 규모(size)·같은 이상 버전의 Qwen
+ *    계열 후속 모델을 고르고, 이번 요청 한정으로 딱 1회 재시도합니다.
+ *  - 401/403(인증)·429(rate limit)·5xx·network/timeout/malformed 응답은 절대 fallback
+ *    대상이 아닙니다. 후속 모델을 못 찾거나 그 재시도도 실패하면 더 재시도하지 않고
+ *    (무한 retry 금지) 항상 `{ "explanation": null }` 로 귀결되어 규칙 기반 견적은
+ *    그대로 유지됩니다.
+ *  - fallback 후보 조회 결과는 5분 transient 캐시(성공/실패 모두) — 기본 모델이 죽어
+ *    있는 동안 매 요청마다 `/models` 를 다시 부르지 않습니다.
+ *  - 실제 사용된 모델(기본/fallback)은 고객 화면에 노출되지 않고, `WP_DEBUG` 활성 시
+ *    서버 로그로만 확인 가능합니다.
  *
  * REST : POST /wp-json/tenlune/v1/ai-quote-explain
  *   body { service, features[], consultFeatures[], bundle|null, low, high, days, budget }
@@ -42,9 +66,10 @@
  *      의 PRICING 라벨 집합에 있는 값만 통과. 임의 프롬프트 문자열 차단.
  *
  * API 키 : 선택된 provider 의 키 상수 우선 → 같은 provider 의 키 옵션 → 필터
- *          `tenlune/ai_quote_api_key`.  openrouter → TENLUNE_OPENROUTER_API_KEY,
- *          groq → TENLUNE_GROQ_API_KEY.  선택 안 된 provider 의 키는 읽지 않습니다.
- *          서버에서 Authorization 헤더로만 쓰이고 프런트엔드로는 절대 나가지 않습니다.
+ *          `tenlune/ai_quote_api_key`.  groq → TENLUNE_GROQ_API_KEY,
+ *          openrouter → TENLUNE_OPENROUTER_API_KEY.  선택 안 된 provider 의 키는 읽지
+ *          않습니다. 서버에서 Authorization 헤더로만 쓰이고 프런트엔드로는 절대 나가지
+ *          않습니다(fallback 모델 조회의 `/models` 호출도 같은 키만 사용).
  *
  * @package TenluneContent
  */
@@ -149,8 +174,14 @@ function tenlune_ai_quote_explain( WP_REST_Request $request ) {
 	// 4) provider 무관 프롬프트.
 	$messages = tenlune_ai_quote_build_messages( $payload );
 
-	// 5) provider 호출(현재 Groq). 실패 시 null.
+	// 5) provider 호출(현재 Groq, 기본 모델 qwen/qwen3.8-27b). 모델 unavailable 확인 시
+	// 동일 Qwen 계열 후속 모델로 1회 재시도(tenlune_ai_quote_chat() 내부). 실패 시 null.
 	$result = tenlune_ai_quote_chat( $messages['system'], $messages['user'], $api_key );
+
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG && ! empty( $result['used_fallback_model'] ) ) {
+		// 고객 화면에는 노출하지 않음 — 서버 로그로만 fallback 발생 여부/모델 확인.
+		error_log( '[tenlune-ai-quote] fallback model used: ' . $result['used_fallback_model'] ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+	}
 
 	if ( ! empty( $result['error'] ) ) {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -443,11 +474,15 @@ function tenlune_ai_quote_build_messages( array $p ) {
  * 키 소스(상수·옵션 이름)를 한 곳에서 관리합니다. 둘 다 OpenAI 호환 /chat/completions
  * 라 통신 코드는 공용입니다. 필터 `tenlune/ai_quote_providers` 로 항목을 추가·수정.
  *
- *   ⚠️ 모델 ID 는 라이브 확인값입니다 (2026-08-29):
- *     - groq       'qwen/qwen3.6-27b'  → Groq Chat API 모델 목록에 존재.
+ *   ⚠️ 모델 ID 는 라이브 확인값입니다:
+ *     - groq       'qwen/qwen3.8-27b'  → Groq 모델 목록에 존재 (2026-09 확인, preview,
+ *                                        tool calling 지원, 131K ctx). 이 provider 가
+ *                                        기본값이며, 이 모델이 unavailable 로 확인되면
+ *                                        위 "Qwen 모델 fallback" 이 동작합니다.
  *     - openrouter 'qwen/qwen3.6-27b'  → OpenRouter /models 에 존재("Qwen: Qwen3.6 27B",
- *                                        262K ctx, 유료 소액). :free Qwen 없음 — 무료가
- *                                        필요하면 상수 TENLUNE_AI_QUOTE_MODEL 로 덮으세요.
+ *                                        262K ctx, 유료 소액, 2026-08-29 확인). :free Qwen
+ *                                        없음. 현재는 대체 provider(기본 아님) — 다시
+ *                                        기본으로 쓰려면 모델을 다시 확인하세요.
  *
  *   OpenRouter `extra_body.reasoning.enabled = false` (2026-08-29 추가):
  *     qwen3.6-27b 는 OpenRouter 메타에서 reasoning `default_enabled: true` / `mandatory:
@@ -475,7 +510,7 @@ function tenlune_ai_quote_providers() {
 		),
 		'groq'       => array(
 			'base_url'     => 'https://api.groq.com/openai/v1',
-			'model'        => 'qwen/qwen3.6-27b',
+			'model'        => 'qwen/qwen3.8-27b',
 			'key_constant' => 'TENLUNE_GROQ_API_KEY',
 			'key_option'   => 'tenlune_groq_api_key',
 			'headers'      => array(),
@@ -490,13 +525,13 @@ function tenlune_ai_quote_providers() {
 /**
  * 현재 활성 provider 식별값.
  *
- * 기본 'openrouter'. 전환은 상수 TENLUNE_AI_QUOTE_PROVIDER 또는 필터
- * `tenlune/ai_quote_provider`. 레지스트리에 없는 값이면 'openrouter' 로 되돌립니다.
+ * 기본 'groq'. 전환은 상수 TENLUNE_AI_QUOTE_PROVIDER 또는 필터
+ * `tenlune/ai_quote_provider`. 레지스트리에 없는 값이면 'groq' 로 되돌립니다.
  *
  * @return string
  */
 function tenlune_ai_quote_active_provider() {
-	$id = 'openrouter';
+	$id = 'groq';
 
 	if ( defined( 'TENLUNE_AI_QUOTE_PROVIDER' ) && is_string( TENLUNE_AI_QUOTE_PROVIDER ) && '' !== TENLUNE_AI_QUOTE_PROVIDER ) {
 		$id = TENLUNE_AI_QUOTE_PROVIDER;
@@ -505,7 +540,7 @@ function tenlune_ai_quote_active_provider() {
 	$id        = (string) apply_filters( 'tenlune/ai_quote_provider', $id );
 	$providers = tenlune_ai_quote_providers();
 
-	return isset( $providers[ $id ] ) ? $id : 'openrouter';
+	return isset( $providers[ $id ] ) ? $id : 'groq';
 }
 
 /**
@@ -545,9 +580,12 @@ function tenlune_ai_quote_provider_config() {
 		$cfg['extra_body'] = array();
 	}
 
-	// provider 무관 모델 강제 override (무료 모델 지정 등).
+	// provider 무관 모델 강제 override (무료 모델 지정 등). 사용자가 모델을 직접
+	// 고정한 것이므로, 이 경우엔 Qwen 모델 fallback 을 하지 않습니다(그 의도를 존중).
+	$cfg['model_overridden'] = false;
 	if ( defined( 'TENLUNE_AI_QUOTE_MODEL' ) && is_string( TENLUNE_AI_QUOTE_MODEL ) && '' !== TENLUNE_AI_QUOTE_MODEL ) {
-		$cfg['model'] = TENLUNE_AI_QUOTE_MODEL;
+		$cfg['model']            = TENLUNE_AI_QUOTE_MODEL;
+		$cfg['model_overridden'] = true;
 	}
 
 	$cfg = apply_filters( 'tenlune/ai_quote_provider_config', $cfg );
@@ -555,19 +593,22 @@ function tenlune_ai_quote_provider_config() {
 }
 
 /**
- * LLM 통신 — OpenAI 호환 chat/completions.
+ * LLM 통신 1회 시도 — OpenAI 호환 chat/completions.
  *
- * openrouter · groq 둘 다 이 스키마이므로 provider 별 분기가 없습니다. base_url · model ·
- * 추가 headers · 키는 전부 tenlune_ai_quote_provider_config() 에서 옵니다. OpenAI 비호환
- * provider 로 갈 때만 이 함수를 재작성하면 됩니다.
+ * openrouter · groq 둘 다 이 스키마이므로 provider 별 분기가 없습니다. base_url ·
+ * 추가 headers · extra_body · 키는 전부 tenlune_ai_quote_provider_config() 에서 옵니다.
+ * 모델만 인자로 받는 이유는 tenlune_ai_quote_chat() 이 기본 모델 → fallback 모델
+ * 순으로 이 함수를 최대 2회(재시도 1회) 호출하기 때문입니다. OpenAI 비호환 provider 로
+ * 갈 때만 이 함수를 재작성하면 됩니다.
  *
+ * @param array  $cfg     tenlune_ai_quote_provider_config() 결과.
+ * @param string $model   이번 시도에 실제로 보낼 모델 id.
  * @param string $system  system 메시지.
  * @param string $user    user 메시지.
  * @param string $api_key API 키.
- * @return array{text:?string,error:?string}
+ * @return array{text:?string,error:?string,status:int,code:?string,message:?string}
  */
-function tenlune_ai_quote_chat( $system, $user, $api_key ) {
-	$cfg = tenlune_ai_quote_provider_config();
+function tenlune_ai_quote_chat_attempt( array $cfg, $model, $system, $user, $api_key ) {
 	$url = rtrim( (string) $cfg['base_url'], '/' ) . '/chat/completions';
 
 	$headers = array_merge(
@@ -582,7 +623,7 @@ function tenlune_ai_quote_chat( $system, $user, $api_key ) {
 	$body = array_merge(
 		$cfg['extra_body'],
 		array(
-			'model'       => $cfg['model'],
+			'model'       => $model,
 			'messages'    => array(
 				array(
 					'role'    => 'system',
@@ -610,18 +651,30 @@ function tenlune_ai_quote_chat( $system, $user, $api_key ) {
 
 	if ( is_wp_error( $response ) ) {
 		return array(
-			'text'  => null,
-			'error' => 'transport: ' . $response->get_error_message(),
+			'text'    => null,
+			'error'   => 'transport: ' . $response->get_error_message(),
+			'status'  => 0,
+			'code'    => null,
+			'message' => null,
 		);
 	}
 
-	$code = (int) wp_remote_retrieve_response_code( $response );
-	$raw  = (string) wp_remote_retrieve_body( $response );
+	$http_status = (int) wp_remote_retrieve_response_code( $response );
+	$raw         = (string) wp_remote_retrieve_body( $response );
 
-	if ( 200 !== $code ) {
+	if ( 200 !== $http_status ) {
+		// OpenAI 호환 오류 바디: { "error": { "code", "message" } } — model unavailable
+		// 판별(tenlune_ai_quote_is_model_unavailable_error())에 필요한 만큼만 꺼냅니다.
+		$decoded    = json_decode( $raw, true );
+		$error_code = ( is_array( $decoded ) && isset( $decoded['error']['code'] ) ) ? (string) $decoded['error']['code'] : null;
+		$error_msg  = ( is_array( $decoded ) && isset( $decoded['error']['message'] ) ) ? (string) $decoded['error']['message'] : null;
+
 		return array(
-			'text'  => null,
-			'error' => 'http ' . $code . ': ' . tenlune_ai_quote_clip( $raw, 200 ),
+			'text'    => null,
+			'error'   => 'http ' . $http_status . ': ' . tenlune_ai_quote_clip( $raw, 200 ),
+			'status'  => $http_status,
+			'code'    => $error_code,
+			'message' => $error_msg,
 		);
 	}
 
@@ -642,14 +695,260 @@ function tenlune_ai_quote_chat( $system, $user, $api_key ) {
 
 	if ( '' === trim( (string) $text ) ) {
 		return array(
-			'text'  => null,
-			'error' => 'empty completion',
+			'text'    => null,
+			'error'   => 'empty completion',
+			'status'  => 200,
+			'code'    => null,
+			'message' => 'empty completion',
 		);
 	}
 
 	return array(
-		'text'  => $text,
-		'error' => null,
+		'text'    => $text,
+		'error'   => null,
+		'status'  => 200,
+		'code'    => null,
+		'message' => null,
+	);
+}
+
+/**
+ * "qwen/qwen<version>-<size>b(-suffix)?" 형태만 이해합니다(예: "qwen/qwen3.8-27b").
+ * 그 외 이름 규칙은 안전하게 포기(null)합니다 — 아무 모델이나 후속으로 골라 답변
+ * 품질을 예측 불가능하게 만들지 않기 위함입니다.
+ *
+ * @param string $id 모델 id.
+ * @return array{raw:string,version:float,sizeB:int}|null
+ */
+function tenlune_ai_quote_parse_qwen_model_id( $id ) {
+	$id = trim( (string) $id );
+	if ( ! preg_match( '#^qwen/qwen(\d+(?:\.\d+)?)[a-z]*-(\d+)b(?:[-_][a-z0-9]+)*$#i', $id, $m ) ) {
+		return null;
+	}
+	return array(
+		'raw'     => $id,
+		'version' => (float) $m[1],
+		'sizeB'   => (int) $m[2],
+	);
+}
+
+/**
+ * 이 용도(Chat Completions, 견적 설명 문단)와 명백히 맞지 않는 특수 목적 모델 토큰.
+ *
+ * @return string[]
+ */
+function tenlune_ai_quote_blocked_model_tokens() {
+	return array(
+		'vl', 'vision', 'embed', 'embedding', 'rerank', 'reranker', 'guard', 'safety',
+		'audio', 'whisper', 'speech', 'tts', 'stt', 'moderation', 'omni', 'coder', 'math',
+	);
+}
+
+/**
+ * "qwen/" 네임스페이스이고 embedding/vision/audio 등 특수 목적 모델이 아닌지.
+ *
+ * @param string $id 모델 id.
+ * @return bool
+ */
+function tenlune_ai_quote_is_qwen_chat_candidate( $id ) {
+	$id = strtolower( (string) $id );
+	if ( 0 !== strpos( $id, 'qwen/' ) ) {
+		return false;
+	}
+	$tokens  = (array) preg_split( '/[^a-z0-9]+/', $id );
+	$blocked = tenlune_ai_quote_blocked_model_tokens();
+	foreach ( $tokens as $t ) {
+		if ( in_array( $t, $blocked, true ) ) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * 현재(=unavailable 로 확인된) 모델과 같은 규모(size)의 Qwen 계열 중, 과거 버전으로
+ * downgrade 하지 않는 가장 가까운 후속 모델을 고릅니다. 확신할 수 없으면 null 을
+ * 반환합니다(안전 실패 우선).
+ *
+ * @param array  $models           provider `/models` 응답의 `data` 배열. 각 항목은
+ *                                  `id`(필수)·`active`(선택, false 면 제외)를 가진 배열.
+ * @param string $current_model_id 지금 unavailable 로 확인된 모델 id.
+ * @return string|null
+ */
+function tenlune_ai_quote_pick_fallback_model( array $models, $current_model_id ) {
+	$current = tenlune_ai_quote_parse_qwen_model_id( $current_model_id );
+	if ( null === $current ) {
+		return null;
+	}
+
+	$candidates = array();
+	foreach ( $models as $m ) {
+		if ( ! is_array( $m ) || empty( $m['id'] ) ) {
+			continue;
+		}
+		if ( isset( $m['active'] ) && false === $m['active'] ) {
+			continue;
+		}
+
+		$id = (string) $m['id'];
+		if ( $id === $current_model_id || ! tenlune_ai_quote_is_qwen_chat_candidate( $id ) ) {
+			continue;
+		}
+
+		$parsed = tenlune_ai_quote_parse_qwen_model_id( $id );
+		if ( null === $parsed || $parsed['sizeB'] !== $current['sizeB'] || $parsed['version'] < $current['version'] ) {
+			continue;
+		}
+
+		$candidates[] = $parsed;
+	}
+
+	if ( empty( $candidates ) ) {
+		return null;
+	}
+
+	usort(
+		$candidates,
+		static function ( $a, $b ) {
+			if ( $a['version'] === $b['version'] ) {
+				return strcmp( $a['raw'], $b['raw'] );
+			}
+			return ( $a['version'] < $b['version'] ) ? -1 : 1;
+		}
+	);
+
+	return $candidates[0]['raw'];
+}
+
+/**
+ * 활성 provider 의 `/models` 목록을 1회 조회합니다. 실패하면 빈 배열(=fallback 후보 없음
+ * → 규칙 기반 견적만 유지, 아래 tenlune_ai_quote_chat() 참고).
+ *
+ * @param array  $cfg     provider 설정(base_url 포함).
+ * @param string $api_key API 키(같은 provider 의 키만 씁니다).
+ * @return array
+ */
+function tenlune_ai_quote_fetch_model_ids( array $cfg, $api_key ) {
+	$url = rtrim( (string) $cfg['base_url'], '/' ) . '/models';
+
+	$response = wp_remote_get(
+		$url,
+		array(
+			'timeout' => 8,
+			'headers' => array( 'Authorization' => 'Bearer ' . $api_key ),
+		)
+	);
+
+	if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		return array();
+	}
+
+	$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+	return ( is_array( $data ) && ! empty( $data['data'] ) && is_array( $data['data'] ) ) ? $data['data'] : array();
+}
+
+/**
+ * fallback 후보 조회 — 5분 transient 캐시를 먼저 보고, 없으면 `/models` 를 1회 조회해
+ * 고른 뒤 캐싱합니다. 못 찾았어도(null) 캐싱합니다 — 기본 모델이 죽어 있는 동안 매
+ * 요청마다 `/models` 를 다시 부르지 않기 위해서입니다.
+ *
+ * @param array  $cfg              provider 설정.
+ * @param string $api_key          API 키.
+ * @param string $current_model_id 지금 unavailable 인 모델.
+ * @return string|null
+ */
+function tenlune_ai_quote_resolve_fallback_model( array $cfg, $api_key, $current_model_id ) {
+	$cache_key = 'tl_aiq_fb_' . md5( $cfg['id'] . '|' . $current_model_id );
+	$cached    = get_transient( $cache_key );
+
+	if ( false !== $cached ) {
+		return ( '' === $cached ) ? null : $cached;
+	}
+
+	$models = tenlune_ai_quote_fetch_model_ids( $cfg, $api_key );
+	$picked = tenlune_ai_quote_pick_fallback_model( $models, $current_model_id );
+
+	set_transient( $cache_key, ( null === $picked ) ? '' : $picked, 5 * MINUTE_IN_SECONDS );
+	return $picked;
+}
+
+/**
+ * "이 모델 자체를 더 이상 쓸 수 없음" 만 fallback 대상으로 좁힙니다. 401/403(인증)·
+ * 429(rate limit)·5xx(서버)·network/timeout/malformed request 는 이 함수에 오면 안
+ * 됩니다(호출하는 쪽이 먼저 상태코드로 걸러냅니다) — 판별 기준은 404 +
+ * `model_not_found` 류(does not exist / not found / deprecated / removed / unavailable).
+ *
+ * @param int         $status  HTTP 상태 코드.
+ * @param string|null $code    OpenAI 호환 `error.code`.
+ * @param string|null $message OpenAI 호환 `error.message`.
+ * @return bool
+ */
+function tenlune_ai_quote_is_model_unavailable_error( $status, $code, $message ) {
+	if ( 404 !== (int) $status ) {
+		return false;
+	}
+	if ( 'model_not_found' === $code ) {
+		return true;
+	}
+	return (bool) preg_match(
+		'#does not exist|model[^.]*not found|no longer (available|supported)|has been (decommissioned|deprecated|removed)|model unavailable|access unavailable#i',
+		(string) $message
+	);
+}
+
+/**
+ * LLM 통신 오케스트레이션 — 기본 모델 1회 → (모델 unavailable 로 명백히 확인될 때만)
+ * 동일 Qwen 계열 후속 모델로 1회 재시도.
+ *
+ * openrouter · groq 둘 다 OpenAI 호환 스키마라 provider 별 분기가 없습니다. 실제
+ * HTTP 통신·파싱은 tenlune_ai_quote_chat_attempt() 가 맡고, 이 함수는 "언제 재시도할지"
+ * 흐름만 담당합니다(무한 retry 없음 — 최대 2회: 기본 1 + fallback 1).
+ *
+ * @param string $system  system 메시지.
+ * @param string $user    user 메시지.
+ * @param string $api_key API 키.
+ * @return array{text:?string,error:?string,used_fallback_model:?string}
+ */
+function tenlune_ai_quote_chat( $system, $user, $api_key ) {
+	$cfg = tenlune_ai_quote_provider_config();
+
+	$first = tenlune_ai_quote_chat_attempt( $cfg, $cfg['model'], $system, $user, $api_key );
+	if ( null !== $first['text'] ) {
+		return array(
+			'text'                => $first['text'],
+			'error'               => null,
+			'used_fallback_model' => null,
+		);
+	}
+
+	$allow_fallback = empty( $cfg['model_overridden'] );
+
+	if ( $allow_fallback && tenlune_ai_quote_is_model_unavailable_error( $first['status'], $first['code'], $first['message'] ) ) {
+		$fallback_model = tenlune_ai_quote_resolve_fallback_model( $cfg, $api_key, $cfg['model'] );
+
+		if ( null !== $fallback_model && $fallback_model !== $cfg['model'] ) {
+			$retry = tenlune_ai_quote_chat_attempt( $cfg, $fallback_model, $system, $user, $api_key );
+
+			if ( null !== $retry['text'] ) {
+				return array(
+					'text'                => $retry['text'],
+					'error'               => null,
+					'used_fallback_model' => $fallback_model,
+				);
+			}
+
+			return array(
+				'text'                => null,
+				'error'               => 'fallback(' . $fallback_model . ') ' . $retry['error'],
+				'used_fallback_model' => $fallback_model,
+			);
+		}
+	}
+
+	return array(
+		'text'                => null,
+		'error'               => $first['error'],
+		'used_fallback_model' => null,
 	);
 }
 

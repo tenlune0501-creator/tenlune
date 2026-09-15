@@ -76,23 +76,33 @@
 | `ai-quote-llm-endpoint-v2.php` | — (폐기, 이력용) | — | **폐기됨(2026-08-29).** LLM 보강 엔드포인트는 WPCode 스니펫이 아니라 **`tenlune-content` 플러그인 `includes/ai-quote.php`** (plugin ≥ 0.1.5) 로 이관. REST `POST /wp-json/tenlune/v1/ai-quote-explain`. 배포 = 플러그인 ZIP 업로드 |
 | — | Contact Form 7 **form ID 12** | `/contact/` 문의 폼 | 활성·한국어화·2단 구조(예산 선택 / AI 견적 자동입력 / 고객 자유입력) 완료 |
 
-추가: LLM 설명 보강은 멀티 provider (OpenAI 호환). **기본 provider = OpenRouter**,
-설정으로 Groq 전환 가능.
+추가: LLM 설명 보강은 멀티 provider (OpenAI 호환). **기본 provider = Groq**
+(2026-09-15 전환, 이전엔 OpenRouter 기본), 설정으로 OpenRouter 전환 가능.
 
 | provider | base_url | 모델(확인값) | 키 상수 (옵션 fallback) | 추가 헤더 | 요청 body 추가(`extra_body`) |
 |---|---|---|---|---|---|
-| `openrouter` (기본) | `https://openrouter.ai/api/v1` | `qwen/qwen3.6-27b` (유료·소액, :free Qwen 없음) | `TENLUNE_OPENROUTER_API_KEY` (`tenlune_openrouter_api_key`) | `HTTP-Referer: https://tenlune.com`, `X-Title: Tenlune` | `reasoning: { enabled: false }` |
-| `groq` | `https://api.groq.com/openai/v1` | `qwen/qwen3.6-27b` (Groq 모델 목록에 존재) | `TENLUNE_GROQ_API_KEY` (`tenlune_groq_api_key`) | — | `{}` (없음) |
+| `groq` (기본, 2026-09-15~) | `https://api.groq.com/openai/v1` | `qwen/qwen3.8-27b` (라이브 확인, tool calling·131K ctx) | `TENLUNE_GROQ_API_KEY` (`tenlune_groq_api_key`) | — | `{}` (없음) |
+| `openrouter` (대체) | `https://openrouter.ai/api/v1` | `qwen/qwen3.6-27b` (유료·소액, :free Qwen 없음, 2026-08-29 확인 — 다시 기본으로 쓰려면 모델 재확인 필요) | `TENLUNE_OPENROUTER_API_KEY` (`tenlune_openrouter_api_key`) | `HTTP-Referer: https://tenlune.com`, `X-Title: Tenlune` | `reasoning: { enabled: false }` |
 
 `qwen3.6-27b` 는 OpenRouter 에서 reasoning `default_enabled: true` → 안 끄면 `max_tokens` 를
 `<think>` 로 다 써 최종 답변이 빈 문자열로 옴(라이브 로그: `finish_reason=length`, output
 정확히 320). plugin 0.1.6 부터 OpenRouter 요청에만 공식 unified 파라미터
 `reasoning:{enabled:false}` 를 붙이고(`extra_body`, provider 별), `max_tokens` 기본값을
-320→400 으로 조정. 파서는 혹시 섞여 오는 `<think>…</think>` 를 제거. Groq body 는 무변경.
+320→400 으로 조정. 파서는 혹시 섞여 오는 `<think>…</think>` 를 제거. Groq body 는 무변경
+(라이브 검증 결과 `qwen/qwen3.8-27b` 는 `finish_reason: stop`, `<think>` 없이 곧바로
+최종 답변을 냄).
 
-전환: `wp-config.php` 에 `define('TENLUNE_AI_QUOTE_PROVIDER','groq');` + `TENLUNE_GROQ_API_KEY`.
-모델만 바꾸려면 `define('TENLUNE_AI_QUOTE_MODEL','...');`. 선택된 provider 의 키가 없으면
-외부 호출 없이 `{explanation: null}` — 규칙 기반 결과만 표시(fallback).
+**Qwen 모델 fallback (2026-09-15 신규, plugin 0.1.9)**: 기본 모델이 404 +
+`model_not_found` 류(deprecated/removed/not found)로 명백히 unavailable 로 확인될 때만,
+활성 provider 의 `/models` 를 조회해 같은 규모(size)·이상 버전의 Qwen 계열 후속 모델로
+이번 요청 한정 1회 재시도(`ai-quote.php` 의 `tenlune_ai_quote_chat()`). 401/403/429/5xx/
+network/timeout 은 대상 아님, `TENLUNE_AI_QUOTE_MODEL` 로 모델을 직접 고정하면 비활성.
+class-material-manager 의 Groq/Qwen fallback(`groq-fallback.ts`)과 같은 원칙.
+
+전환: `wp-config.php` 에 `define('TENLUNE_AI_QUOTE_PROVIDER','openrouter');` +
+`TENLUNE_OPENROUTER_API_KEY` (OpenRouter로 되돌리기). 모델만 바꾸려면
+`define('TENLUNE_AI_QUOTE_MODEL','...');`(이 경우 Qwen fallback 비활성). 선택된 provider
+의 키가 없으면 외부 호출 없이 `{explanation: null}` — 규칙 기반 결과만 표시(fallback).
 
 ## Source of Truth
 
